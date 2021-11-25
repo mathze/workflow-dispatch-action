@@ -13,6 +13,7 @@ jobs:
         uses: ./
         with:
           workflowname: dummy.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Run action with payload"
         id: dispatchPayload
