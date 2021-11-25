@@ -36,10 +36,10 @@ Can be the name of the workflow or its ID.
 | {}
 
 |`token`
-|A personal access token used to trigger the workflow. +
+|The token used to trigger the workflow. +
 The token must have `repo` scope.
-|`false`
-|Token of the current workflow.
+|`true`
+|-
 
 |`failOnError`
 |Defines if the action should result in a build failure, if an error was discovered

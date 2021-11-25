@@ -1,3 +1,4 @@
+import com.rnett.action.github.github
 import data.GhGraphClient
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -33,7 +34,7 @@ fun resolveInputs() = group("Reading inputs") {
     getInput("ref").ifBlank { null },
     getInput("workflowname"),
     Json.parseToJsonElement(getInput("payload").ifBlank { "{}" }).jsonObject,
-    getInput("token").ifBlank { ActionEnvironment.GITHUB_TOKEN },
+    getInput("token"),
     getInput("failOnError").toBooleanStrictOrNull() ?: false
   )
 }

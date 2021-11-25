@@ -24,8 +24,8 @@ inputs:
     required: false
 
   token:
-    description: 'A personal access token used to trigger the workflow. The token must have repo scope. Defaults to the token of the current workflow.'
-    required: false
+    description: 'A token used to trigger the workflow. The token must have repo scope.'
+    required: true
 
   failOnError:
     description: 'Defines if the action should result in a build failure, if an error was discovered'
