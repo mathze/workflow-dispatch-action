@@ -1,0 +1,27 @@
+on:
+  workflow_dispatch
+
+jobs: 
+  runAction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Run action with no payload"
+        id: dispatchNoPayload
+        uses: ./
+        with:
+          workflowname: dummy.yml
+
+      - name: "Run action with payload"
+        id: dispatchPayload
+        uses: ./
+        with: 
+          workflowname: dummy.yml
+          payload: "{'to-greet':'${{ env.GITHUB_ACTOR }}'}"
+
+      - name: "Print run-ids"
+        run: |
+          echo "No Payload:   ${{ steps.dispatchNoPayload.outputs.run_id }}"
+          echo "With Payload: ${{ steps.dispatchPayload.outputs.run_id }}"

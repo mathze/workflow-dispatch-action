@@ -1,0 +1,14 @@
+on:
+  workflow_dispatch:
+    inputs: 
+      to-greet:
+        required: true
+        description: Whom to greet
+
+jobs: 
+  greetJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet
+        run: |
+          echo "Hello ${{ github.event.inputs.to-greet }}

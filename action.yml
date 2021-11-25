@@ -1,0 +1,43 @@
+name: 'Workflow Dispatch Action'
+description: 'Trigger the workflow dispatch event and retrieves the run-id'
+author: mathze
+
+inputs:
+  owner:
+    description: 'Organization or user under which the repository of the workflow resist. Defaults to current owner.'
+    required: false
+
+  repo:
+    description: 'Name of the repository the workflow resist in. Defaults to current repository'
+    required: false
+
+  ref:
+    description: 'The git reference for the workflow. The reference can be a branch or tag name. Defaults to default branch of the repository.'
+    required: false
+
+  workflowname:
+    description: 'Name of the workflow to trigger. Can be the name of the workflow or its ID.'
+    required: true
+
+  payload:
+    description: 'Json-String representing any payload/input that shall be sent with the dispatch event.'
+    required: false
+
+  token:
+    description: 'A personal access token used to trigger the workflow. The token must have repo scope. Defaults to the token of the current workflow.'
+    required: false
+
+  failOnError:
+    description: 'Defines if the action should result in a build failure, if an error was discovered'
+    required: false
+    default: "false"
+
+outputs:
+  failed:
+    description: 'Indicates if there was an issue with the action run, and the workflow may not have been triggered correctly. [true, false]'
+  run_id:
+    description: 'The id of the started workflow run'
+
+runs:
+  using: node12
+  main: dist/index.js
