@@ -1,0 +1,60 @@
+= Workflow dispatch action
+
+An action that creates a workflow dispatch event and returns the run_id of started workflow.
+
+== Setup
+
+== Inputs
+
+|===
+|Input|Description|Required|Default
+
+|`owner`
+|Organization or user under which the repository of the workflow resist.
+|`false`
+|Current owner
+
+|`repo`
+|Name of the repository the workflow resist in.
+|`false`
+|Current repository
+
+|`ref`
+|The git reference for the workflow. The reference can be a branch or tag name.
+|`false`
+|Default branch of the repository.
+
+|`workflowname`
+|Name of the workflow to trigger. +
+Can be the name of the workflow or its ID.
+|`true`
+|-
+
+|`payload`
+|Json-String representing any payload/input that shall be sent with the dispatch event.
+|`false`
+| {}
+
+|`token`
+|A personal access token used to trigger the workflow. +
+The token must have `repo` scope.
+|`false`
+|Token of the current workflow.
+
+|`failOnError`
+|Defines if the action should result in a build failure, if an error was discovered
+|`false`
+|`false`
+
+|===
+
+== Outputs
+|===
+|Output|Type|Description
+
+|`failed`
+|Boolean
+|Indicates if there was an issue with the action run, and the workflow may not have been triggered correctly.
+
+
+|===
