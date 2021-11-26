@@ -16,10 +16,10 @@ suspend fun main(): Unit = runAction(
   catch = ::catchException
 ) { inputs ->
   if (inputs.ref.isNullOrBlank()) {
+    info("No branch given detecting default branch")
     val defaultBranch = detectDefaultBranch(inputs)
     inputs.ref = defaultBranch
   }
-  
 }
 
 fun catchException(inputs: Inputs, ex: Throwable) {
