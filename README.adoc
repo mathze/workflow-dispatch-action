@@ -3,9 +3,21 @@
 An action that creates a workflow dispatch event and returns the run_id of started workflow.
 
 == Setup
+[source,yaml, title="With direct wait"]
+----
+#...
+  - name: "Start and wait for a workflow"
+    id: startWorkflow
+    uses: mathze/workflow-dispatch-action@v1
+    with:
+      workflowname: my-workflow.yml
+      token: ${{ secrets.GITHUB_TOKEN }}
+#...
+  - name: "Reuse workflow run id"
+    run: "echo ${{ steps.startWorkflow.outputs.run_id }}
+----
 
 == Inputs
-
 |===
 |Input|Description|Required|Default
 
@@ -56,5 +68,8 @@ The token must have `repo` scope.
 |Boolean
 |Indicates if there was an issue with the action run, and the workflow may not have been triggered correctly.
 
+|`run_id`
+|String
+|The run id of the started workflow. May be empty if no run was found or on error.
 
 |===
