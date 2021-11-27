@@ -23,7 +23,7 @@ suspend fun main(): Unit = runAction(
   catch = ::catchException
 ) { inputs: Inputs ->
   if (inputs.ref.isNullOrBlank()) {
-    info("No branch given detecting default branch")
+    logger.info("No branch given detecting default branch")
     val defaultBranch = detectDefaultBranch(inputs)
     inputs.ref = defaultBranch
   }
@@ -32,6 +32,7 @@ suspend fun main(): Unit = runAction(
   val workflowRun = logger.withGroup("Triggering workflow") {
     val workflows = Workflows(client)
     val wfId = workflows.findWorkflowId(inputs.workflowName)
+    info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
     val requestTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
     workflows.waitForWorkflowRunCreated(wfId, requestTime, inputs.ref!!, MAX_WORKFLOW_RUN_WAIT)
   }
@@ -76,7 +77,7 @@ suspend fun detectDefaultBranch(inputs: Inputs): String {
     val response = ghClient.sendQuery(request).jsonObject
     info("Got response")
     val data = response["data"]!!.jsonObject
-    val result = data["repository"]!!.jsonObject["defaultBranchRef"]!!.jsonObject["name"]!!.jsonPrimitive.toString()
+    val result = data["repository"]!!.jsonObject["defaultBranchRef"]!!.jsonObject["name"]!!.jsonPrimitive.content
     info("ℹ️ Detected branch '$result' as default branch of '$owner/$repo'")
     result
   }
