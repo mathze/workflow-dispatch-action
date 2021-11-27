@@ -2,10 +2,9 @@ package usecases
 
 import com.rnett.action.core.logger.info
 import data.GhRestClient
-import data.queryParams
+import data.etag
 import data.toJson
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.etag
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -86,21 +85,18 @@ class Workflows(private val client: GhRestClient) {
     ref: String,
     prev: Pair<String?, WorkflowRun?>
   ): Pair<String?, WorkflowRun?> {
-    val response = client.sendGet("actions/runs") {
-      headers.append(QUERY_CREATED, startTime)
+    val query = mapOf(
+      queryEvent(),
+      queryCreated(startTime),
+      queryRef(ref)
+    )
+    val response = client.sendGet("actions/runs", query) {
       prev.first?.also {
-        headers.append(HEADER_ETAG, it)
+        this.add(HEADER_ETAG, it)
       }
-      queryParams(
-        mapOf(
-          queryEvent(),
-          queryCreated(startTime),
-          queryRef(ref)
-        )
-      )
     }
 
-    if (response.status == HttpStatusCode.NotModified) {
+    if (response.statusCode == HttpStatusCode.NotModified.value) {
       // if we got not modified we used an etag -> prev cannot be null
       return prev
     }
