@@ -1,5 +1,6 @@
 package data
 
+import com.rnett.action.core.logger.info
 import com.rnett.action.httpclient.MutableHeaders
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpHeaders
@@ -10,6 +11,7 @@ import utils.actions.ActionEnvironment
 class GhGraphClient(token: String) : WsClient(token) {
 
   suspend fun sendQuery(query: String): JsonElement {
+    info("Sending request >>$query<< to $graphApiUrl")
     return client.post(graphApiUrl, query).toJson()
   }
 
