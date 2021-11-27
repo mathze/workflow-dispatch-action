@@ -74,6 +74,7 @@ suspend fun detectDefaultBranch(inputs: Inputs): String {
 
   return logger.withGroup("Retrieve default branch") {
     val response = ghClient.sendQuery(request).jsonObject
+    info("Got response")
     val data = response["data"]!!.jsonObject
     val result = data["repository"]!!.jsonObject["defaultBranchRef"]!!.jsonObject["name"]!!.jsonPrimitive.toString()
     info("ℹ️ Detected branch '$result' as default branch of '$owner/$repo'")
