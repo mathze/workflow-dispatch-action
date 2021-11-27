@@ -12,7 +12,9 @@ class GhGraphClient(token: String) : WsClient(token) {
 
   suspend fun sendQuery(query: String): JsonElement {
     info("Sending request >>$query<< to $graphApiUrl")
-    return client.post(graphApiUrl, query).toJson()
+    val response = client.post(graphApiUrl, query)
+    info("Response ${response.readBody()}")
+    return response.toJson()
   }
 
   private val graphApiUrl by lazy {
