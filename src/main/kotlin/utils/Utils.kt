@@ -1,7 +1,8 @@
 package utils
 
-import utils.actions.setFailed
-import utils.actions.setOutput
+import com.rnett.action.core.logger.error
+import com.rnett.action.core.logger.fatal
+import com.rnett.action.core.outputs
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -9,15 +10,15 @@ import kotlin.contracts.contract
 @OptIn(ExperimentalContracts::class)
 inline fun <T> runAction(
   before: () -> T,
-  catch: (input:T, ex:Throwable) -> Unit,
+  catch: (input: T, ex: Throwable) -> Unit,
   block: (input: T) -> Unit
 ) {
   contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-  setOutput("failed", true)
+  outputs["failed"] = "true"
   val a = before()
   try {
     block(a)
-    setOutput("failed", false)
+    outputs["failed"] = "false"
   } catch (e: Throwable) {
     catch(a, e)
   }
@@ -28,9 +29,9 @@ fun failOrError(
   failOnError: Boolean
 ) {
   // if we report any failure, consider the action to have failed, may not make the build fail
-  setOutput("failed", true)
+  outputs["failed"] = "true"
   if (failOnError) {
-    setFailed(message)
+    fatal(message)
   } else {
     error(message)
   }

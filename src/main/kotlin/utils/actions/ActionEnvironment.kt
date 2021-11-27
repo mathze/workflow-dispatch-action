@@ -1,15 +1,12 @@
 package utils.actions
 
 import NodeJS.get
-import com.rnett.action.github.github
 import process
 import kotlin.reflect.KProperty
 
 object ActionEnvironment {
   val GITHUB_REPOSITORY by Environment
 
-  val GITHUB_WORKFLOW by Environment
-  
   /**
    * The id of the current workflow run.
    * Same over multiple re-runs.
