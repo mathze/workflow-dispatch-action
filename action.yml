@@ -33,6 +33,27 @@ inputs:
     required: false
     default: "false"
 
+  useIdentifierStep:
+    required: false
+    default: "false"
+    description: >
+      Indicates that the action shall send a unique id (external_run_id) within the `inputs` payload.
+      To detect the correct workflow run, your target workflow has to have at first step, in the earliest job,
+      the name of this id.
+      
+      Example:
+      # ...
+        inputs:
+          external_run_id:
+            required: false
+      # ...
+      jobs:
+        beforeAll:
+          runs-on: ubuntu-latest
+          steps:
+            - name: ${{ github.event.inputs.external_run_id }}
+      # ...
+
 outputs:
   failed:
     description: 'Indicates if there was an issue with the action run, and the workflow may not have been triggered correctly. [true, false]'
