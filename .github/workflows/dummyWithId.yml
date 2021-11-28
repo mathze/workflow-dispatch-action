@@ -1,4 +1,4 @@
-name: Dummy
+name: Dummy with external id
 on:
   workflow_dispatch:
     inputs:
@@ -8,8 +8,9 @@ on:
         default: "World"
         type: string
       external_run_id:
-        description: For unique run detection
+        description: Id to use for unique run detection
         required: false
+        type: string
 
 jobs:
   beforeAll:
