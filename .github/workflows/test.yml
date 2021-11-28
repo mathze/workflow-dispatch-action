@@ -25,7 +25,7 @@ jobs:
             {
               "to-greet": "${{ github.actor }}"
             }
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
 
       - name: "Run action with token from env"
         id: dispatchDefaultToken
