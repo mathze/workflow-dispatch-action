@@ -1,6 +1,6 @@
 package usecases
 
-import com.rnett.action.core.logger.info
+import com.rnett.action.core.logger
 import data.GhRestClient
 import data.etag
 import data.toJson
@@ -14,6 +14,7 @@ import model.RunConclusion
 import model.RunStatus
 import model.WorkflowRun
 import setTimeout
+import utils.actions.ActionFailedException
 import kotlin.js.Date
 import kotlin.math.abs
 import kotlin.time.Duration
@@ -37,17 +38,24 @@ class Workflows(private val client: GhRestClient) {
    *
    * @return The datetime string (ISO) of creation time (or current date if not received by the endpoint)
    */
-  suspend fun triggerWorkflow(workflowId: String, ref: String, inputs: JsonObject): String {
+  suspend fun triggerWorkflow(workflowId: String, ref: String, inputs: JsonObject? = null): String {
     val body = JsonObject(
-      mapOf(
+      mutableMapOf(
         "ref" to JsonPrimitive(ref),
-        "inputs" to inputs
-      )
+      ).also { 
+        if(null != inputs) {
+          "inputs" to inputs
+        }
+      }
     ).toString()
+
     val response = client.sendPost("actions/workflows/$workflowId/dispatches", body)
-    info("Headers: ${response.headers.toMap()}")
-    info("Body ${response.readBody()}")
-    return response.headers["date"] ?: Date().toISOString()
+    if (HttpStatusCode.BadRequest.value <= response.statusCode) {
+      logger.error("Response: ${response.readBody()}")
+      throw ActionFailedException("Error starting workflow! Details see log")
+    }
+
+    return response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
   }
 
   /**
@@ -57,7 +65,7 @@ class Workflows(private val client: GhRestClient) {
    * @param createdTime The time the run was created.
    * @param ref The branch or tag the run belongs to.
    * @param maxTimeout The maximum duration to wait for the run to appear. Defaults to 3 seconds
-   * 
+   *
    * @return The found workflow run or `null` if none was found within the timeout.
    */
   suspend fun waitForWorkflowRunCreated(
@@ -65,13 +73,13 @@ class Workflows(private val client: GhRestClient) {
     createdTime: String,
     ref: String,
     maxTimeout: Duration = 3.seconds
-  ): WorkflowRun? {
+  ): WorkflowRun? = logger.withGroup("Wait workflow run created") {
     val start = Date()
     var result: Pair<String?, WorkflowRun?> = Pair(null, null)
     do {
       result = findWorkflowRun(workflowId, createdTime, ref, result).also {
         if (null == it.second) {
-          info("")
+          logger.info("No run found, retry in 500ms")
           setTimeout({ }, 500)
         }
       }
@@ -99,13 +107,14 @@ class Workflows(private val client: GhRestClient) {
 
     if (response.statusCode == HttpStatusCode.NotModified.value) {
       // if we got not modified we used an etag -> prev cannot be null
+      logger.info("No updates")
       return prev
     }
 
     val wfRuns = response.toJson().jsonObject.getValue("workflow_runs").jsonArray.map {
       it.jsonObject
     }
-    info("Found ${wfRuns.size} matching workflow runs.")
+    logger.info("Found ${wfRuns.size} matching workflow runs.")
     val runs = wfRuns.filter {
       val wfId = it.getValue("workflow_id").jsonPrimitive.toString()
       workflowId == wfId
@@ -138,7 +147,6 @@ class Workflows(private val client: GhRestClient) {
     private const val EVENT_DISPATCH = "workflow_dispatch"
     private const val QUERY_CREATED = "created"
     private const val QUERY_REF = "branch"
-
 
     fun queryEvent(type: String = EVENT_DISPATCH) = QUERY_EVENT to type
     fun queryCreated(at: String) = QUERY_CREATED to at
