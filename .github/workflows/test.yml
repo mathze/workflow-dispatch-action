@@ -27,14 +27,28 @@ jobs:
             }
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
 
+      - name: "Print run-ids"
+        run: |
+          echo "No Payload:   ${{ steps.dispatchNoPayload.outputs.run_id }}"
+          echo "With Payload: ${{ steps.dispatchPayload.outputs.run_id }}"
+
+  runOtherAction:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      deployments: write
+      issues: write
+      packages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write
+    steps:
       - name: "Run action with token from env"
         id: dispatchDefaultToken
         uses: ./
         with:
           workflowname: dummy.yml
           payload: '{ "to-greet": "${{ github.actor }}" }'
-
-      - name: "Print run-ids"
-        run: |
-          echo "No Payload:   ${{ steps.dispatchNoPayload.outputs.run_id }}"
-          echo "With Payload: ${{ steps.dispatchPayload.outputs.run_id }}"
