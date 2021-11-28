@@ -55,7 +55,7 @@ suspend fun main(): Unit = runAction(
     val wfId = workflows.findWorkflowId(inputs.workflowName)
     logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
     val requestTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
-    workflows.waitForWorkflowRunCreated(wfId, requestTime, inputs.ref!!, MAX_WORKFLOW_RUN_WAIT)
+    workflows.waitForWorkflowRunCreated(wfId, requestTime, inputs.ref!!, MAX_WORKFLOW_RUN_WAIT, inputs.externalRunId)
   }
 
   if (null == workflowRun) {
