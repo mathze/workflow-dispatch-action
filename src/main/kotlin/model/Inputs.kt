@@ -7,7 +7,9 @@ data class Inputs(
   val repo: String,
   var ref: String?,
   val workflowName: String,
-  val payload: JsonObject,
+  var payload: JsonObject,
   val token: String,
-  val failOnError: Boolean = false
+  val failOnError: Boolean = false,
+  val useIdentifierStep: Boolean,
+  var externalRunId: String? = null
 )

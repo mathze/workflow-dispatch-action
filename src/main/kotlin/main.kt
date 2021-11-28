@@ -6,8 +6,12 @@ import com.rnett.action.core.maskSecret
 import data.GhGraphClient
 import data.GhRestClient
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 import model.Inputs
 import usecases.Workflows
 import utils.actions.ActionEnvironment
@@ -30,6 +34,17 @@ suspend fun main(): Unit = runAction(
     logger.info("No branch given detecting default branch")
     val defaultBranch = detectDefaultBranch(inputs)
     inputs.ref = defaultBranch
+  }
+
+  if (inputs.useIdentifierStep) {
+    // generate external_run_id
+    val uuid = UUID.generateUUID()
+    val extRunId = "${ActionEnvironment.GITHUB_RUN_ID}-${ActionEnvironment.GITHUB_JOB}-$uuid"
+    logger.info("Using external_run_id: $extRunId")
+    inputs.externalRunId = extRunId
+    inputs.payload = JsonObject(inputs.payload.toMutableMap().also {
+      it["external_run_id"] = JsonPrimitive(extRunId)
+    })
   }
 
   val client = GhRestClient(inputs.token, inputs.owner, inputs.repo)
@@ -61,7 +76,8 @@ fun resolveInputs() = logger.withGroup("Reading inputs") {
     getRequired("workflowname"),
     Json.parseToJsonElement(getOrElse("payload") { "{}" }).jsonObject,
     getRequired("token").apply { maskSecret() },
-    getOptional("failOnError")?.toBooleanStrictOrNull() ?: false
+    getOptional("failOnError")?.toBooleanStrictOrNull() ?: false,
+    getOptional("useIdentifierStep")?.toBooleanStrictOrNull() ?: false
   ).also { 
     logger.info("Got inputs: $it")
   }

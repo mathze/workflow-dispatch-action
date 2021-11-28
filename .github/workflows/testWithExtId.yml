@@ -1,0 +1,61 @@
+name: Test
+on:
+  workflow_dispatch
+
+jobs:
+  runAction1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Run first action"
+        id: action1
+        uses: ./
+        with:
+          workflowname: dummy.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          useIdentifierStep: true
+          payload: |
+            {
+              "to-greet": "first job, first action"
+            }
+
+      - name: "Run second action"
+        id: action2
+        uses: ./
+        with:
+          workflowname: dummy.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          useIdentifierStep: true
+          payload: |
+            {
+              "to-greet": "first job, second action"
+            }
+
+      - name: Print results
+        run: |
+          echo "First action:   ${{ steps.action1.outputs.run_id }}"
+          echo "Sechond action: ${{ steps.action2.outputs.run_id }}"
+
+  runAction2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Run action with token from env"
+        id: action3
+        uses: ./
+        with:
+          workflowname: dummy.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          useIdentifierStep: true
+          payload: |
+            {
+              "to-greet": "second job, first action"
+            }
+
+      - name: Print result
+        run: |
+          echo "Third action:   ${{ steps.action3.outputs.run_id }}"

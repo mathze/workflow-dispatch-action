@@ -26,7 +26,7 @@ dependencies {
     implementation(group = "com.github.rnett.ktjs-github-action", name = it, version = "1.4.3")
   }
 
+  implementation(group="app.softwork", name="kotlinx-uuid-core-js", version="0.0.9")
   implementation(kotlin("stdlib-js"))
-
   implementation("io.ktor:ktor-client-js:1.6.4")
 }
