@@ -59,7 +59,8 @@ class Workflows(private val client: GhRestClient) {
       logger.error("Response: ${response.readBody()}")
       throw ActionFailedException("Error starting workflow! Details see log")
     }
-    val date = response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
+    val rawDate = response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
+    val date = Date(rawDate).toISOString()
     logger.info("Dispatched event at '$date'. (Header: ${response.headers.toMap()}\nBody: ${response.readBody()})")
     return date
   }
@@ -156,7 +157,7 @@ class Workflows(private val client: GhRestClient) {
     private const val QUERY_REF = "branch"
 
     fun queryEvent(type: String = EVENT_DISPATCH) = QUERY_EVENT to type
-    fun queryCreated(at: String) = QUERY_CREATED to at
+    fun queryCreated(at: String) = QUERY_CREATED to ">=$at"
     fun queryRef(of: String) = QUERY_REF to of
   }
 }
