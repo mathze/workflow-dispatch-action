@@ -8,11 +8,6 @@ object ActionEnvironment {
   val GITHUB_REPOSITORY by Environment
 
   /**
-   * Actual token
-   */
-  val GITHUB_TOKEN by Environment
-
-  /**
    * The id of the current workflow run.
    * Same over multiple re-runs.
    */
