@@ -142,8 +142,8 @@ class Workflows(private val client: GhRestClient) {
   }
 
   private fun Date.delta(other: Date): Duration {
-    val msThis = this.getMilliseconds()
-    val msOther = other.getMilliseconds()
+    val msThis = this.getUTCMilliseconds()
+    val msOther = other.getUTCMilliseconds()
     val delta = abs(msThis - msOther)
     return delta.toDuration(DurationUnit.MILLISECONDS)
   }
