@@ -14,8 +14,10 @@ enum class RunStatus(val value: String) {
   COMPLETED("completed");
 
   companion object {
-    fun from(value: String) = values().first {
-      it.value == value
+    fun from(value: String?) = value?.let {
+      values().first {
+        it.value == value
+      }
     }
   }
 }
@@ -31,8 +33,10 @@ enum class RunConclusion(val value: String) {
   TIMED_OUT("timed_out");
 
   companion object {
-    fun from(value: String) = values().firstOrNull {
-      it.value == value
+    fun from(value: String?) = value?.let {
+      values().firstOrNull {
+        it.value == value
+      }
     }
   }
 }
