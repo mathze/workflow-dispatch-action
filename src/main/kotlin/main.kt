@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import model.Inputs
 import usecases.Workflows
 import utils.actions.ActionEnvironment
+import utils.actions.ActionFailedException
 import utils.failOrError
 import utils.runAction
 import kotlin.time.Duration.Companion.seconds
@@ -21,6 +22,10 @@ suspend fun main(): Unit = runAction(
   before = ::resolveInputs,
   catch = ::catchException
 ) { inputs: Inputs ->
+  if (inputs.token.isBlank()) {
+    throw ActionFailedException("Unable to retrieve a token!")
+  }
+
   if (inputs.ref.isNullOrBlank()) {
     logger.info("No branch given detecting default branch")
     val defaultBranch = detectDefaultBranch(inputs)
@@ -55,7 +60,7 @@ fun resolveInputs() = logger.withGroup("Reading inputs") {
     getOptional("ref"),
     getRequired("workflowname"),
     Json.parseToJsonElement(getOrElse("payload") { "{}" }).jsonObject,
-    getRequired("token").apply { maskSecret() },
+    getOrElse("token") { ActionEnvironment.GITHUB_TOKEN }.apply { maskSecret() },
     getOptional("failOnError")?.toBooleanStrictOrNull() ?: false
   ).also { 
     logger.info("Got inputs: $it")
