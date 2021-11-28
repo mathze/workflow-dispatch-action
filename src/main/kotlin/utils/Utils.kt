@@ -3,9 +3,12 @@ package utils
 import com.rnett.action.core.logger.error
 import com.rnett.action.core.logger.fatal
 import com.rnett.action.core.outputs
+import timers.setTimeout
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @OptIn(ExperimentalContracts::class)
 inline fun <T> runAction(
@@ -35,4 +38,11 @@ fun failOrError(
   } else {
     error(message)
   }
+}
+
+suspend fun delay(ms: Long): Unit = suspendCoroutine { continuation ->
+  setTimeout({
+    println("timeout")
+    continuation.resume(Unit)
+  }, ms)
 }

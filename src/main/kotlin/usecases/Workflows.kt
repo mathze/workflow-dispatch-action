@@ -18,6 +18,7 @@ import model.RunStatus
 import model.WorkflowRun
 import setTimeout
 import utils.actions.ActionFailedException
+import utils.delay
 import kotlin.js.Date
 import kotlin.math.abs
 import kotlin.time.Duration
@@ -81,17 +82,17 @@ class Workflows(private val client: GhRestClient) {
   ): WorkflowRun? = logger.withGroup("Wait workflow run created") {
     val start = getTimeMillis()
     var result: Pair<String?, WorkflowRun?> = Pair(null, null)
-    var delta = 0.seconds
+    var delta: Duration
     do {
       result = findWorkflowRun(workflowId, createdTime, ref, result).also {
         if (null == it.second) {
           logger.info("No run found, retry in 1s")
-          setTimeout({ }, 1000)
+          delay(1000)
         }
       }
       delta = getTimeMillis().deltaMs(start)
       logger.info("Time passed since start: $delta")
-    } while ((null == result.second) && (delta < maxTimeout))
+    } while ((null == result.second) && (delta.inWholeMilliseconds < maxTimeout.inWholeMilliseconds))
 
     return result.second
   }
