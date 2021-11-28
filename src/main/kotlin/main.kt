@@ -12,12 +12,14 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
+import kotlinx.uuid.nextUUID
 import model.Inputs
 import usecases.Workflows
 import utils.actions.ActionEnvironment
 import utils.actions.ActionFailedException
 import utils.failOrError
 import utils.runAction
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 val MAX_WORKFLOW_RUN_WAIT = 10.seconds
@@ -38,7 +40,7 @@ suspend fun main(): Unit = runAction(
 
   if (inputs.useIdentifierStep) {
     // generate external_run_id
-    val uuid = UUID.generateUUID()
+    val uuid = Random.Default.nextUUID()
     val extRunId = "${ActionEnvironment.GITHUB_RUN_ID}-${ActionEnvironment.GITHUB_JOB}-$uuid"
     logger.info("Using external_run_id: $extRunId")
     inputs.externalRunId = extRunId
