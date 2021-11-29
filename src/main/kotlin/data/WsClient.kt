@@ -24,6 +24,10 @@ open class WsClient(private val token: String) {
     headers.add(HttpHeaders.CacheControl, "no-cache")
     headers.add(HttpHeaders.UserAgent, "mathze/workflow-dispatch-action")
   }
+  
+  companion object {
+    const val HEADER_IF_NONE_MATCH = "If-None-Match"
+  }
 }
 
 suspend inline fun HttpResponse.toJson() = Json.parseToJsonElement(readBody())
