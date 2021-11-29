@@ -4,6 +4,7 @@ import com.rnett.action.core.logger
 import data.GhRestClient
 import data.etag
 import data.toJson
+import http2.constants.HTTP2_HEADER_IF_NONE_MATCH
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.getTimeMillis
 import kotlinx.serialization.json.JsonElement
@@ -116,7 +117,7 @@ class Workflows(private val client: GhRestClient) {
     )
     val response = client.sendGet("actions/runs", query) {
       prev.first?.also {
-        this.add(HEADER_ETAG, it)
+        this.add(HTTP2_HEADER_IF_NONE_MATCH, it)
       }
     }
 
@@ -187,7 +188,6 @@ class Workflows(private val client: GhRestClient) {
   }
 
   companion object {
-    private const val HEADER_ETAG = "If-None-Match"
     private const val QUERY_EVENT = "event"
     private const val EVENT_DISPATCH = "workflow_dispatch"
     private const val QUERY_CREATED = "created"
