@@ -22,7 +22,7 @@ import utils.runAction
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
-val MAX_WORKFLOW_RUN_WAIT = 10.seconds
+val MAX_WORKFLOW_RUN_WAIT = 15.seconds
 
 suspend fun main(): Unit = runAction(
   before = ::resolveInputs,
