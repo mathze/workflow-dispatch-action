@@ -159,6 +159,7 @@ class Workflows(private val client: GhRestClient) {
   private suspend fun checkExternalRunId(wfRun: JsonObject, externalRunId: String?): Boolean {
     return externalRunId?.let { extRunId ->
       val jobsUrl = wfRun.getValue("jobs_url").jsonPrimitive.content
+      logger.info("Going to receive jobs from $jobsUrl")
       val response = client.sendGet(jobsUrl)
       logger.info("Received Jobs-Response (${response.statusCode}): ${response.headers.toMap()}")
       if (!response.isSuccess()) {
