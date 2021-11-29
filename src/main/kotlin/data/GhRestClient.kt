@@ -10,19 +10,25 @@ import utils.actions.ActionEnvironment
 class GhRestClient(token: String, private val owner: String, private val repo: String) : WsClient(token) {
 
   suspend fun sendPost(path: String, body: String): HttpResponse {
-    return client.post(createRepoPath(path), body)
+    return client.post(createUrl(path), body)
   }
 
-  suspend fun sendGet(path: String, query: Map<String, String> = mapOf(), headerProvider: (MutableHeaders.() -> Unit)? = null): HttpResponse {
-    return client.get(createRepoPath(path, query)) {
+  suspend fun sendGet(pathOrUrl: String, query: Map<String, String> = mapOf(), headerProvider: (MutableHeaders.() -> Unit)? = null): HttpResponse {
+    return client.get(createUrl(pathOrUrl, query)) {
       if (null != headerProvider) {
         headerProvider()
       }
     }
   }
 
-  private fun createRepoPath(path: String, query: Map<String, String> = mapOf()) = URLBuilder()
-    .takeFrom("$restApiUrl/repos/$owner/$repo/$path")
+  private fun createUrl(pathOrUrl: String, query: Map<String, String> = mapOf()) = URLBuilder()
+    .takeFrom(pathOrUrl.let { 
+      if(it.startsWith("http")) {
+        it
+      } else {
+        "$restApiUrl/repos/$owner/$repo/$pathOrUrl"
+      }
+    })
     .queryParams(query)
     .buildString()
 
