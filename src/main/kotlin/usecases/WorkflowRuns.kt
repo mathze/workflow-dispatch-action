@@ -2,10 +2,10 @@ package usecases
 
 import com.rnett.action.httpclient.HttpResponse
 import data.GhRestClient
+import data.WsClient.Companion.HEADER_IF_NONE_MATCH
 import data.etag
 import data.toJson
 import data.toResponseJson
-import http2.constants.HTTP2_HEADER_IF_NONE_MATCH
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -42,7 +42,7 @@ class WorkflowRuns(private val client: GhRestClient) {
   private suspend fun sendRunRequest(runId: String, etag: String? = null): HttpResponse =
     client.sendGet("/actions/runs/$runId") {
       etag?.also {
-        this.add(HTTP2_HEADER_IF_NONE_MATCH, it)
+        this.add(HEADER_IF_NONE_MATCH, it)
       }
     }
 }
