@@ -5,6 +5,7 @@ import data.GhRestClient
 import data.WsClient.Companion.HEADER_IF_NONE_MATCH
 import data.etag
 import data.toJson
+import data.toResponseJson
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.getTimeMillis
 import kotlinx.serialization.json.JsonElement
@@ -28,9 +29,16 @@ import kotlin.time.toDuration
 
 class Workflows(private val client: GhRestClient) {
 
-  suspend fun findWorkflowId(wfName: String): String {
+  suspend fun getWorkflowIdFromName(wfName: String): String {
     val response = client.sendGet("actions/workflows/$wfName")
-    return response.toJson().jsonObject["id"]!!.jsonPrimitive.content
+    if (!response.isSuccess()) {
+      logger.error("Receiving workflow id results in error! Details: ${response.toResponseJson(true)}")
+      throw ActionFailedException("Unable to receive workflow id! Details see log")
+    }
+
+    val jsonResponse = response.toJson()
+    return jsonResponse.jsonObject["id"]?.jsonPrimitive?.contentOrNull
+      ?: throw ActionFailedException("Unable to get workflow id from response! Got: $jsonResponse")
   }
 
   /**
@@ -98,7 +106,7 @@ class Workflows(private val client: GhRestClient) {
       }
       delta = getTimeMillis().deltaMs(start)
       logger.info("Time passed since start: $delta")
-    } while ((null == result.second) && (delta.inWholeMilliseconds < maxTimeout.inWholeMilliseconds))
+    } while ((null == result.second) && (delta < maxTimeout))
 
     return result.second
   }
@@ -180,7 +188,6 @@ class Workflows(private val client: GhRestClient) {
         step.jsonObject.getValue("name").jsonPrimitive.content == externalRunId
       }
     }
-
 
   private fun Long.deltaMs(other: Long): Duration {
     val delta = abs(this - other)
