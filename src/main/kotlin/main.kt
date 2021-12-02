@@ -3,6 +3,7 @@ import com.rnett.action.core.inputs.getOrElse
 import com.rnett.action.core.inputs.getRequired
 import com.rnett.action.core.logger
 import com.rnett.action.core.maskSecret
+import com.rnett.action.core.outputs
 import data.GhGraphClient
 import data.GhRestClient
 import kotlinx.serialization.json.Json
@@ -51,23 +52,24 @@ suspend fun main(): Unit = runAction(
   }
 
   val client = GhRestClient(inputs.token, inputs.owner, inputs.repo)
-  val workflowRun = logger.withGroup("Triggering workflow") {
-    val workflows = Workflows(client)
-    val wfId = workflows.getWorkflowIdFromName(inputs.workflowName)
-    logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
-    val dispatchTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
-    val wfRuns = WorkflowRuns(client)
-    wfRuns.waitForWorkflowRunCreated(
-      wfId, dispatchTime, inputs.ref!!,
-      MAX_WORKFLOW_RUN_WAIT, POLL_FREQUENCY,
-      inputs.externalRunId
-    )
-  }
+
+  val workflows = Workflows(client)
+  val wfId = workflows.getWorkflowIdFromName(inputs.workflowName)
+  logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
+  val dispatchTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
+
+  val wfRuns = WorkflowRuns(client)
+  val workflowRun = wfRuns.waitForWorkflowRunCreated(
+    wfId, dispatchTime, inputs.ref!!,
+    MAX_WORKFLOW_RUN_WAIT, POLL_FREQUENCY,
+    inputs.externalRunId
+  )
 
   if (null == workflowRun) {
     failOrError("Unable to receive workflow run within $MAX_WORKFLOW_RUN_WAIT!", inputs.failOnError)
   } else {
     logger.notice("Found workflow run with ${workflowRun.id}")
+    outputs["run_id"] = workflowRun.id
   }
 }
 
@@ -86,7 +88,7 @@ fun resolveInputs() = logger.withGroup("Reading inputs") {
     getRequired("token").apply { maskSecret() },
     getOptional("failOnError")?.toBooleanStrictOrNull() ?: false,
     getOptional("useIdentifierStep")?.toBooleanStrictOrNull() ?: false
-  ).also { 
+  ).also {
     logger.info("Got inputs: $it")
   }
 }
