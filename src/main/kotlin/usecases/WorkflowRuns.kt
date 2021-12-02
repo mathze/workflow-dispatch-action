@@ -181,7 +181,7 @@ class WorkflowRuns(
   }
 
   private suspend fun sendRunRequest(runId: String, etag: String? = null): HttpResponse =
-    client.sendGet("/actions/runs/$runId") {
+    client.sendGet("actions/runs/$runId") {
       etag?.also {
         this.add(HEADER_IF_NONE_MATCH, it)
       }
