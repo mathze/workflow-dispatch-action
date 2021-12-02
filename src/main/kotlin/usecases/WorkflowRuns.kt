@@ -75,6 +75,8 @@ class WorkflowRuns(
       updateRunDetails(run)
     }
 
+    logger.info("Current runs in scope: $runs")
+
     // 3. if external ref id is present we check jobs of the runs otherwise we take the first closest to dispatch date
     val candidate = externalRefId?.let { extRefId ->
       // before we check we update the 'jobs' entry
