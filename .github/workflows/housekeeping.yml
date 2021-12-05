@@ -1,0 +1,15 @@
+name: Housekeeping
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  clean-workwlow-runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clean runs
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          retain_days: 1
+          keep_minimum_runs: 0
