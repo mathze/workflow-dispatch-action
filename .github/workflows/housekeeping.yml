@@ -3,13 +3,36 @@ on:
   schedule:
     - cron: 0 0 * * *
   workflow_dispatch:
+    inputs: 
+      retain_days:
+        type: string
+        default: "0"
+        description: Minimum age of runs to keep
+        required: false
+      min_num_runs:
+        type: string
+        default: "0"
+        description: "Min number of runs to keep"
+        required: false
 
 jobs:
   clean-workwlow-runs:
     runs-on: ubuntu-latest
     steps:
+      - id: setup
+        run: |
+          if [[ "${{ github.event.inputs.retain_days }}" -eq "" ]]; then
+            echo "::set-output name=retain_days::1"
+          else
+            echo "::set-output name=retain_days::${{ github.event.inputs.retain_days }}"
+          fi
+          if [[ "${{ github.event.inputs.min_num_runs }}" -eq "" ]]; then
+            echo "::set-output name=min_runs::1"
+          else
+            echo "::set-output name=min_runs::${{ github.event.inputs.min_num_runs }}"
+          fi
       - name: clean runs
         uses: Mattraks/delete-workflow-runs@main
         with:
-          retain_days: 1
-          keep_minimum_runs: 0
+          retain_days: ${{ steps.setup.outputs.retain_days }}
+          keep_minimum_runs: ${{ steps.setup.outputs.min_runs }}
