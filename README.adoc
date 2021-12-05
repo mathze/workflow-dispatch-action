@@ -2,7 +2,7 @@
 :toc: preamble
 :current_version: v1
 
-An action that creates a workflow dispatch event and returns the run_id of started workflow.
+An action that creates a workflow dispatch event and returns the run-id of started workflow.
 
 == About
 In contrast to other existing dispatch-actions, this action provides a way to reliably identify the workflow run (see <<With marker step>>). +

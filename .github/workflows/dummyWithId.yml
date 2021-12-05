@@ -17,7 +17,7 @@ jobs:
   beforeAll:
     runs-on: ubuntu-latest
     steps:
-      - name: ${{ github.event.inputs.external_run_id }}
+      - name: ${{ github.event.inputs.external_ref_id }}
         run: echo
 
   greetJob:
