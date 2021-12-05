@@ -7,7 +7,7 @@ on:
         description: Whom to greet
         default: "World"
         type: string
-      external_run_id:
+      external_ref_id:
         description: Id to use for unique run detection
         required: false
         type: string
