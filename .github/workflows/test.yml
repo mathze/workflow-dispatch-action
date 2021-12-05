@@ -13,14 +13,14 @@ jobs:
         id: dispatchNoPayload
         uses: ./
         with:
-          workflowname: dummy.yml
+          workflow-name: dummy.yml
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Run action with payload"
         id: dispatchPayload
         uses: ./
         with:
-          workflowname: dummy.yml
+          workflow-name: dummy.yml
           payload: |
             {
               "to-greet": "${{ github.actor }}"
@@ -34,17 +34,6 @@ jobs:
 
   runOtherAction:
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      checks: write
-      contents: write
-      deployments: write
-      issues: write
-      packages: write
-      pull-requests: write
-      repository-projects: write
-      security-events: write
-      statuses: write
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -53,5 +42,5 @@ jobs:
         id: dispatchDefaultToken
         uses: ./
         with:
-          workflowname: dummy.yml
+          workflow-name: dummy.yml
           payload: '{ "to-greet": "${{ github.actor }}" }'
