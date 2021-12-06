@@ -25,7 +25,7 @@ To enable it, specify the `workflow-name` and `run-id` inputs.
 In this case, the `run-id` isn't required to be valid because it gets replaced by the one detected in the trigger step.
 
 == Usage
-=== Simple usage
+=== Simple (flaky) usage
 The following examples show the minimum setup without using a marker step.
 This mode is handy if you know that there will be only on workflow run at a time.
 
@@ -37,7 +37,7 @@ This mode is handy if you know that there will be only on workflow run at a time
     uses: mathze/workflow-dispatch-action@{current_version}
     with:
       workflow-name: my-workflow.yml
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.MY_PAT }}
       run-id: dummy
 #...
   - name: "Reuse workflow run id"
@@ -52,12 +52,12 @@ This mode is handy if you know that there will be only on workflow run at a time
     uses: mathze/workflow-dispatch-action@{current_version}
     with:
       workflow-name: my-workflow.yml
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.MY_PAT }}
 #...
   - name: "wait to complete"
     uses: mathze/workflow-dispatch-action@{current_version}
     with:
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.MY_PAT }}
       run-id: ${{ steps.startWorkflow.outputs.run-id }}
 ----
 
@@ -71,13 +71,13 @@ This mode is handy if you know that there will be only on workflow run at a time
     uses: mathze/workflow-dispatch-action@{current_version}
     with:
       workflow-name: workflow-with-marker.yml
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.MY_PAT }}
       use-marker-step: true
 #...
   - name: "wait to complete"
     uses: mathze/workflow-dispatch-action@{current_version}
     with:
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.MY_PAT }}
       run-id: ${{ steps.startWorkflow.outputs.run-id }}
 ----
 
@@ -102,25 +102,27 @@ jobs:
 <2> Here we define a step with the name of the paste input.
 
 == Inputs
-
+[cols="1a,2a,1a,2a",options="header"]
 |===
-|Input|Description|Required|Default
+|Input|Description|``R``equired/ +
+``O``ptional|Default
 
 |`owner`
 |Organization or user under which the repository of the workflow resist.
-|`false`
+|*O*
 |Current owner
 
 |`repo`
 |Name of the repository the workflow resist in.
-|`false`
+|*O*
 |Current repository
 
 |`token`
-|The token used to trigger the workflow. +
-The token must have `repo` scope.
-|`false`
-|github.token
+|The token used to work with the API. The token must have `repo` scope.
+[IMPORTANT]
+Because token is used to also trigger dispatch-event, you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token[here]
+|*R*
+|-
 
 |`workflow-name`
 |Name of the workflow to trigger. E.g. 'my-workflow.yml'. +
@@ -131,27 +133,27 @@ The token must have `repo` scope.
 |`ref`
 |The git reference for the workflow.
 The reference can be a branch or tag name.
-|`false`
+|*O*
 |Default branch of the target repository.
 
 |`payload`
 |Json-String representing any payload/input that shall be sent with the dispatch event.
-|`false`
+|*O*
 | {}
 
 |`trigger-timeout`
 |Maximum duration<<duration, ^(D)^>> to use to getting workflow run id.
-|`false`
+|*O*
 |1 minute
 
 |`trigger-interval`
 |Duration<<duration, ^(D)^>> to wait between consecutive tries to retrieve a workflow run id.
-|`false`
+|*O*
 |1 second
 
 |`use-marker-step`
 |Indicates if the action shall look for a marker-step to find the appropriate run.
-|`false`
+|*O*
 |`false`
 
 |`run-id`
@@ -161,17 +163,17 @@ The reference can be a branch or tag name.
 
 |`wait-timeout`
 |Maximum duration<<duration, ^(D)^>> to use to wait until a workflow run completes.
-|`false`
+|*O*
 |10 minutes
 
 |`wait-interval`
 |Duration<<duration, ^(D)^>> to wait between consecutive queries on the workflow run status.
-|`false`
-|1 seconds
+|*O*
+|1 second
 
 |`fail-on-error`
 |Defines if the action should result in a build failure, if an error was discovered
-|`false`
+|*O*
 |`false`
 
 |===
