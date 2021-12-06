@@ -6,12 +6,12 @@ on:
     inputs:
       retain_days:
         type: string
-        default: ""
+        default: "0"
         description: "Minimum age of runs to keep"
         required: false
       min_num_runs:
         type: string
-        default: ""
+        default: "0"
         description: "Min number of runs to keep"
         required: false
 
