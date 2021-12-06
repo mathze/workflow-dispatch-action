@@ -49,6 +49,7 @@ jobs:
         uses: ./
         with:
           workflow-name: dummyWithId.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
           use-marker-step: true
           payload: |
             {
@@ -70,6 +71,7 @@ jobs:
         uses: ./
         with:
           workflow-name: dummyWithId.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
           use-marker-step: true
           payload: |
             {
