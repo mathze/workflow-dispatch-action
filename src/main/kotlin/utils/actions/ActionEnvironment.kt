@@ -7,6 +7,8 @@ import kotlin.reflect.KProperty
 object ActionEnvironment {
   val GITHUB_REPOSITORY by Environment
 
+  val GITHUB_TOKEN by Environment
+
   /**
    * The id of the current workflow run.
    * Same over multiple re-runs.
