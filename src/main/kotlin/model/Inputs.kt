@@ -36,7 +36,7 @@ data class Inputs(
         inputs.getRequired("workflow-name"),
         Json.parseToJsonElement(inputs.getOrElse("payload") { "{}" }).jsonObject,
         inputs.getOrElse("token") { "UNSET" }.also {
-          logger.info("Token: $this")
+          logger.info("Token: $it")
         },
         inputs.getOptional("fail-on-error")?.toBooleanStrictOrNull() ?: false,
         inputs.getOptional("use-marker-step")?.toBooleanStrictOrNull() ?: false,
