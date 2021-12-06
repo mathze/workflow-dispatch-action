@@ -33,8 +33,10 @@ inputs:
 
   token:
     required: true
-    description: A token used to trigger the workflow. The token must have repo scope.
-    default: ${{ github.token }}
+    description: >
+      The token used to work with the API. The token must have repo scope.
+      Because this token is also used to trigger dispatch event, you can not use the GITHUB_TOKEN as explained here 
+      https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token.
 
   fail-on-error:
     required: false

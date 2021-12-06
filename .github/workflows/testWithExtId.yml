@@ -44,16 +44,25 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v2
 
-      - name: "Run action with token from env"
+      - name: "Run separate dispatch"
         id: action3
         uses: ./
         with:
           workflow-name: dummyWithId.yml
           use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
           payload: |
             {
               "to-greet": "second job, first action"
             }
+
+      - name: "Wait to complete"
+        id: action3
+        uses: ./
+        with:
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          run-id: ${{ steps.action3.outputs.run-id }}
 
       - name: Print result
         run: |
@@ -71,6 +80,7 @@ jobs:
         with:
           workflow-name: dummyWithId.yml
           use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
           payload: |
             {
               "to-greet": "third job, first action"

@@ -14,7 +14,7 @@ jobs:
         uses: ./
         with:
           workflow-name: dummy.yml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
 
       - name: "Run action with payload"
         id: dispatchPayload
@@ -31,16 +31,3 @@ jobs:
         run: |
           echo "No Payload:   ${{ steps.dispatchNoPayload.outputs.run_id }}"
           echo "With Payload: ${{ steps.dispatchPayload.outputs.run_id }}"
-
-  runOtherAction:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
-
-      - name: "Run action with token from env"
-        id: dispatchDefaultToken
-        uses: ./
-        with:
-          workflow-name: dummy.yml
-          payload: '{ "to-greet": "${{ github.actor }}" }'
