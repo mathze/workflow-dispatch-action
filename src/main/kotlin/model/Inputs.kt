@@ -33,7 +33,7 @@ data class Inputs(
         inputs.getOrElse("owner") { currOwner },
         inputs.getOrElse("repo") { currRepo },
         inputs.getOptional("ref"),
-        inputs.getRequired("workflow-name"),
+        inputs.getOptional("workflow-name"),
         Json.parseToJsonElement(inputs.getOrElse("payload") { "{}" }).jsonObject,
         inputs.getRequired("token").apply { maskSecret() },
         inputs.getOptional("fail-on-error")?.toBooleanStrictOrNull() ?: false,
