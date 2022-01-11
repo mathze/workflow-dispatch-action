@@ -28,6 +28,9 @@ data class Inputs(
 ) {
   companion object {
     fun resolveInputs() = logger.withGroup("Reading inputs") {
+      // retrieve token first and mask it in case it will be reused somewhere else where an
+      // exception could be thrown which may expose the token (e.g. in payload-parsing below)
+      val token = inputs.getRequired("token").apply { maskSecret() }
       val (currOwner, currRepo) = ActionEnvironment.GITHUB_REPOSITORY.split('/')
       Inputs(
         inputs.getOrElse("owner") { currOwner },
@@ -35,7 +38,7 @@ data class Inputs(
         inputs.getOptional("ref"),
         inputs.getOptional("workflow-name"),
         Json.parseToJsonElement(inputs.getOrElse("payload") { "{}" }).jsonObject,
-        inputs.getRequired("token").apply { maskSecret() },
+        token,
         inputs.getOptional("fail-on-error")?.toBooleanStrictOrNull() ?: false,
         inputs.getOptional("use-marker-step")?.toBooleanStrictOrNull() ?: false,
         inputs.getOptional("run-id"),
