@@ -1,23 +1,7 @@
 name: Workflow Dispatch Action
 description: >
-  Trigger the workflow dispatch event and retrieves the run-id.
-  Supports three modes:
-
-  1. Mode 'Fire and forget':
-    In this mode the action triggers the workflow and just tires to receive the workflow run id.
-    This can be used if you want to get the run id and wait for it in another step/job later on.
-    This mode will be enabled if the `workflow-name` input is present.
-
-  2. Mode 'Just wait':
-    In this mode the action waits until a workflow run finishes.
-    This can be used in combination with 1. mode or if you get the run id from somewhere else.
-    The mode will be enabled if `run-id` is given. In this case the run-id is expected to be valid otherwise 
-    it results in error.
-
-  3. Mode 'Trigger and wait':
-    This is a combination of 1. and 2. mode.
-    To enable it, specify the `workflow-name` and `run-id` inputs. In this case, the `run-id` isn't required to be 
-    valid because it gets replaced by the one detected in the trigger step.
+  Action to trigger a workflow dispatch event and retrieves the run-id.
+  Also supports waiting on triggered workflow to complete.
 
 author: mathze
 
@@ -115,3 +99,7 @@ outputs:
 runs:
   using: node12
   main: dist/index.js
+
+branding:
+  icon: repeat
+  color: green
