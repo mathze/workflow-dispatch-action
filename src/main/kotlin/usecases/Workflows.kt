@@ -159,25 +159,14 @@ class Workflows(private val client: GhRestClient) {
   private suspend fun checkExternalRunId(wfRun: JsonObject, externalRunId: String?): Boolean {
     return externalRunId?.let { extRunId ->
       val jobsUrl = wfRun.getValue("jobs_url").jsonPrimitive.content
-      val response = client.sendGet(jobsUrl)
-      logger.info("Received Jobs-Response (${response.statusCode}): ${response.headers.toMap()}")
-      if (!response.isSuccess()) {
-        val runId = wfRun.getValue("id").jsonPrimitive.content
-        logger.warning("Receiving jobs for $runId failed! Body: ${response.readBody()}")
-        false
-      } else {
-        val jobs = response.toJson().jsonObject
-        checkJobsForExternalRunId(jobs, extRunId)
+      val jobs = client.sendGet(jobsUrl).toJson().jsonObject
+      jobs.getValue("jobs").jsonArray.any { job ->
+        job.jsonObject.getValue("steps").jsonArray.any { step ->
+          step.jsonObject.getValue("name").jsonPrimitive.content == extRunId
+        }
       }
     } ?: true
   }
-
-  private fun checkJobsForExternalRunId(jobs: JsonObject, externalRunId: String): Boolean =
-    jobs.getValue("jobs").jsonArray.any { job ->
-      job.jsonObject.getValue("steps").jsonArray.any { step ->
-        step.jsonObject.getValue("name").jsonPrimitive.content == externalRunId
-      }
-    }
 
 
   private fun Long.deltaMs(other: Long): Duration {
