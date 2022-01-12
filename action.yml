@@ -51,7 +51,7 @@ inputs:
         beforeAll:
           runs-on: ubuntu-latest
           steps:
-            - name: $ { { github.event.inputs.external_run_id } }
+            - name: \${{ github.event.inputs.external_run_id }}
       # ...
 
 outputs:
