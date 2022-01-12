@@ -5,8 +5,7 @@ data class WorkflowRun(
   var etag: String?,
   val branch: String,
   var status: RunStatus,
-  var conclusion: RunConclusion?,
-  var jobs: Jobs? = null,
+  var conclusion: RunConclusion?
 )
 
 enum class RunStatus(val value: String) {
@@ -14,12 +13,10 @@ enum class RunStatus(val value: String) {
   IN_PROGRESS("in_progress"),
   COMPLETED("completed");
 
-  fun match(restState: String): Boolean = value == restState
-
   companion object {
     fun from(value: String?) = value?.let {
       values().first {
-        it.match(value)
+        it.value == value
       }
     }
   }
