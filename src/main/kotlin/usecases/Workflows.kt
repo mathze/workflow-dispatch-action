@@ -37,7 +37,7 @@ class Workflows(private val client: GhRestClient) {
    *
    * @return The datetime string (ISO) of creation time (or current date if not received by the endpoint)
    */
-  suspend fun triggerWorkflow(workflowId: String, ref: String, inputs: JsonObject? = null): String = logger.withGroup("Triggering workflow") {
+  suspend fun triggerWorkflow(workflowId: String, ref: String, inputs: JsonObject? = null): String {
     val body = JsonObject(
       mutableMapOf<String, JsonElement>(
         "ref" to JsonPrimitive(ref),

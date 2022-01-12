@@ -57,7 +57,7 @@ class WorkflowRuns(
     maxTimeout: Duration,
     frequency: Duration,
     externalRefId: String? = null
-  ): WorkflowRun?  = logger.withGroup("Trying to detect workflow run id") {
+  ): WorkflowRun? {
     val result: Pair<Boolean, WorkflowRun?> = executePolling(maxTimeout, frequency) {
       findWorkflowRun(workflowId, ref, dispatchTime, externalRefId)
     }
