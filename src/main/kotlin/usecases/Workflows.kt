@@ -5,7 +5,6 @@ import data.GhRestClient
 import data.etag
 import data.toJson
 import io.ktor.http.HttpStatusCode
-import io.ktor.util.date.getTimeMillis
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -79,7 +78,7 @@ class Workflows(private val client: GhRestClient) {
     ref: String,
     maxTimeout: Duration = 3.seconds
   ): WorkflowRun? = logger.withGroup("Wait workflow run created") {
-    val start = getTimeMillis()
+    val start = Date()
     var result: Pair<String?, WorkflowRun?> = Pair(null, null)
     var delta = 0.seconds
     do {
@@ -89,7 +88,7 @@ class Workflows(private val client: GhRestClient) {
           setTimeout({ }, 1000)
         }
       }
-      delta = getTimeMillis().deltaMs(start)
+      delta = Date().delta(start)
       logger.info("Time passed since start: $delta")
     } while ((null == result.second) && (delta < maxTimeout))
 
@@ -142,8 +141,10 @@ class Workflows(private val client: GhRestClient) {
     )
   }
 
-  private fun Long.deltaMs(other: Long): Duration {
-    val delta = abs(this - other)
+  private fun Date.delta(other: Date): Duration {
+    val msThis = this.getUTCMilliseconds()
+    val msOther = other.getUTCMilliseconds()
+    val delta = abs(msThis - msOther)
     return delta.toDuration(DurationUnit.MILLISECONDS)
   }
 
