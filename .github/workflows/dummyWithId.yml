@@ -11,14 +11,12 @@ on:
         description: Id to use for unique run detection
         required: false
         type: string
-        default: ""
 
 jobs:
   beforeAll:
     runs-on: ubuntu-latest
     steps:
       - name: ${{ github.event.inputs.external_run_id }}
-        run: echo
 
   greetJob:
     runs-on: ubuntu-latest
