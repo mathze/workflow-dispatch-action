@@ -39,9 +39,9 @@ suspend fun main(): Unit = runAction(
     // generate external_run_id
     val uuid = Random.Default.nextUUID()
     val extRunId = "${ActionEnvironment.GITHUB_RUN_ID}-${ActionEnvironment.GITHUB_JOB}-$uuid"
-    logger.info("Using external_ref_id: $extRunId")
+    logger.info("Using external_run_id: $extRunId")
     inputs.payload = JsonObject(inputs.payload.toMutableMap().also {
-      it["external_ref_id"] = JsonPrimitive(extRunId)
+      it["external_run_id"] = JsonPrimitive(extRunId)
     })
     extRunId
   } else null
