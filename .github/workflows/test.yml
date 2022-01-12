@@ -25,7 +25,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Run action with token from env"
-        id: dispatchDefaultToken
+        id: dispatchPayload
         uses: ./
         with:
           workflowname: dummy.yml
