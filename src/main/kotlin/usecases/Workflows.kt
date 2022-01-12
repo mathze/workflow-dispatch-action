@@ -157,12 +157,12 @@ class Workflows(private val client: GhRestClient) {
   }
 
   private suspend fun checkExternalRunId(wfRun: JsonObject, externalRunId: String?): Boolean {
-    return externalRunId?.let { extRunId ->
+    return externalRunId?.let { rId ->
       val jobsUrl = wfRun.getValue("jobs_url").jsonPrimitive.content
       val jobs = client.sendGet(jobsUrl).toJson().jsonObject
       jobs.getValue("jobs").jsonArray.any { job ->
         job.jsonObject.getValue("steps").jsonArray.any { step ->
-          step.jsonObject.getValue("name").jsonPrimitive.content == extRunId
+          step.jsonObject.getValue("name").jsonPrimitive.content == rId
         }
       }
     } ?: true
