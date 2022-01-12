@@ -116,7 +116,6 @@ class WorkflowRuns(
 
     when (runsResp.httpStatus()) {
       HttpStatusCode.OK -> {
-        logger.info("Got workflow runs")
         runListEtag = runsResp.etag()
         // new (no run with id) or updates
         val jsonRuns = runsResp.toJson().jsonObject.getValue("workflow_runs").jsonArray.map {
@@ -125,7 +124,6 @@ class WorkflowRuns(
             getWorkflowId(it) == workflowId
           }
 
-        logger.info("${jsonRuns.size} runs left that matches actual workflow.")
         updateRunListFromResponse(jsonRuns)
       }
       HttpStatusCode.NotModified -> {
@@ -141,14 +139,13 @@ class WorkflowRuns(
     val freshRuns = jsonRuns.map { jRun ->
       WorkflowRun(getId(jRun))
     }
-    val newRuns = freshRuns.filter { frshRun ->
+    val newRuns = freshRuns.filterNot { frshRun ->
       runs.none { it.id == frshRun.id }
     }
-    logger.info("Found ${newRuns.size} new runs")
     val removedRuns = runs.filter { oldRun -> 
       freshRuns.none { it.id == oldRun.id }
     }
-    logger.info("Found ${removedRuns.size} removed runs")
+
     runs.removeAll(removedRuns)
     runs.addAll(newRuns)
   }
