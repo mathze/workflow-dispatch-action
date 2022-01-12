@@ -32,7 +32,7 @@ inputs:
     description: Name of the repository the workflow resist in. Defaults to current repository
 
   token:
-    required: true
+    required: false
     description: A token used to trigger the workflow. The token must have repo scope.
     default: ${{ github.token }}
 
