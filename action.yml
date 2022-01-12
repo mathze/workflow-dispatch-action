@@ -34,7 +34,6 @@ inputs:
   token:
     required: false
     description: A token used to trigger the workflow. The token must have repo scope.
-    default: ${{ github.token }}
 
   fail-on-error:
     required: false

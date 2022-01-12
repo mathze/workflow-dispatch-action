@@ -35,7 +35,7 @@ data class Inputs(
         inputs.getOptional("ref"),
         inputs.getRequired("workflow-name"),
         Json.parseToJsonElement(inputs.getOrElse("payload") { "{}" }).jsonObject,
-        inputs.getOrElse("token") { "UNSET" }.also {
+        inputs.getOrElse("token") { ActionEnvironment.GITHUB_TOKEN }.also {
           logger.info("Token: $this")
         },
         inputs.getOptional("fail-on-error")?.toBooleanStrictOrNull() ?: false,
