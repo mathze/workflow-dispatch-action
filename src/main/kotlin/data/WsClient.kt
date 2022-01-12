@@ -18,7 +18,6 @@ open class WsClient(private val token: String) {
 
   protected open fun applyGhDefaults(headers: MutableHeaders) {
     headers.add(HttpHeaders.CacheControl, "no-cache")
-    headers.add(HttpHeaders.UserAgent, "mathze/workflow-dispatch-action")
   }
 }
 
