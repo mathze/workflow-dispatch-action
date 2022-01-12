@@ -2,15 +2,14 @@ package model
 
 data class WorkflowRun(
   val id: String,
-  var etag: String? = null,
-  var branch: String? = null,
-  var status: RunStatus = RunStatus.QUEUED,
-  var conclusion: RunConclusion? = null,
+  var etag: String?,
+  val branch: String,
+  var status: RunStatus,
+  var conclusion: RunConclusion?,
   var jobs: Jobs? = null,
-  var dateCreated: String? = null
 )
 
-enum class RunStatus(private val value: String) {
+enum class RunStatus(val value: String) {
   QUEUED("queued"),
   IN_PROGRESS("in_progress"),
   COMPLETED("completed");

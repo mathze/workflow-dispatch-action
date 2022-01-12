@@ -12,18 +12,15 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.uuid.nextUUID
 import model.Inputs
-import usecases.WorkflowRuns
 import usecases.Workflows
 import utils.actions.ActionEnvironment
 import utils.actions.ActionFailedException
 import utils.failOrError
 import utils.runAction
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-val MAX_WORKFLOW_RUN_WAIT = 30.seconds
-val POLL_FREQUENCY = 500.milliseconds
+val MAX_WORKFLOW_RUN_WAIT = 10.seconds
 
 suspend fun main(): Unit = runAction(
   before = ::resolveInputs,
@@ -55,13 +52,8 @@ suspend fun main(): Unit = runAction(
     val workflows = Workflows(client)
     val wfId = workflows.getWorkflowIdFromName(inputs.workflowName)
     logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
-    val dispatchTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
-    val wfRuns = WorkflowRuns(client)
-    wfRuns.waitForWorkflowRunCreated(
-      wfId, dispatchTime, inputs.ref!!,
-      MAX_WORKFLOW_RUN_WAIT, POLL_FREQUENCY,
-      inputs.externalRunId
-    )
+    val requestTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
+    workflows.waitForWorkflowRunCreated(wfId, requestTime, inputs.ref!!, MAX_WORKFLOW_RUN_WAIT, inputs.externalRunId)
   }
 
   if (null == workflowRun) {
