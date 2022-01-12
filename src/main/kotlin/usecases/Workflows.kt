@@ -16,6 +16,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import model.RunConclusion
 import model.RunStatus
 import model.WorkflowRun
+import setTimeout
 import utils.actions.ActionFailedException
 import utils.delay
 import kotlin.js.Date
@@ -45,8 +46,8 @@ class Workflows(private val client: GhRestClient) {
     val body = JsonObject(
       mutableMapOf<String, JsonElement>(
         "ref" to JsonPrimitive(ref),
-      ).also {
-        if (null != inputs) {
+      ).also { 
+        if(null != inputs) {
           it["inputs"] = inputs
         }
       }
@@ -58,8 +59,7 @@ class Workflows(private val client: GhRestClient) {
       logger.error("Response: ${response.readBody()}")
       throw ActionFailedException("Error starting workflow! Details see log")
     }
-    val rawDate =
-      response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
+    val rawDate = response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
     val date = Date(rawDate).toISOString()
     logger.info("Dispatched event at '$date'. (Header: ${response.headers.toMap()}\nBody: ${response.readBody()})")
     return date
@@ -67,14 +67,11 @@ class Workflows(private val client: GhRestClient) {
 
   /**
    * Waits until a workflow run with given criteria exists.
-   * If more than one run was found the first will be returned.
-   * If the [externalRunId] is given, the found runs will be checked, no matter if only one was found or more!
    *
    * @param workflowId The id or name of the workflow the run belongs to.
    * @param createdTime The time the run was created.
    * @param ref The branch or tag the run belongs to.
    * @param maxTimeout The maximum duration to wait for the run to appear. Defaults to 3 seconds
-   * @param externalRunId The id used to check in step-names
    *
    * @return The found workflow run or `null` if none was found within the timeout.
    */
@@ -82,14 +79,13 @@ class Workflows(private val client: GhRestClient) {
     workflowId: String,
     createdTime: String,
     ref: String,
-    maxTimeout: Duration = 3.seconds,
-    externalRunId: String? = null
+    maxTimeout: Duration = 3.seconds
   ): WorkflowRun? = logger.withGroup("Wait workflow run created") {
     val start = getTimeMillis()
     var result: Pair<String?, WorkflowRun?> = Pair(null, null)
     var delta: Duration
     do {
-      result = findWorkflowRun(workflowId, createdTime, ref, externalRunId, result).also {
+      result = findWorkflowRun(workflowId, createdTime, ref, result).also {
         if (null == it.second) {
           logger.info("No run found, retry in 1s")
           delay(1000)
@@ -106,7 +102,6 @@ class Workflows(private val client: GhRestClient) {
     workflowId: String,
     startTime: String,
     ref: String,
-    externalRunId: String?,
     prev: Pair<String?, WorkflowRun?>
   ): Pair<String?, WorkflowRun?> {
     val query = mapOf(
@@ -129,45 +124,25 @@ class Workflows(private val client: GhRestClient) {
     val wfRuns = response.toJson().jsonObject.getValue("workflow_runs").jsonArray.map {
       it.jsonObject
     }
-    logger.info("Found ${wfRuns.size} workflow runs. Start filtering.")
-    val runs = wfRuns
-      // 1. filter by id
-      .filter {
-        val wfId = it.getValue("workflow_id").jsonPrimitive.content
-        workflowId == wfId
-      }.filter {
-        checkExternalRunId(it, externalRunId)
-      }
-      .map {
-        WorkflowRun(
-          it.getValue("id").jsonPrimitive.content,
-          null,
-          ref,
-          RunStatus.from(it.getValue("status").jsonPrimitive.contentOrNull)!!,
-          RunConclusion.from(it.getValue("conclusion").jsonPrimitive.contentOrNull)
-        )
-      }
-
-    logger.info("${runs.size} runs left after filtering")
+    logger.info("Found ${wfRuns.size} matching workflow runs.")
+    val runs = wfRuns.filter {
+      val wfId = it.getValue("workflow_id").jsonPrimitive.content
+      workflowId == wfId
+    }.map {
+      WorkflowRun(
+        it.getValue("id").jsonPrimitive.content,
+        null,
+        ref,
+        RunStatus.from(it.getValue("status").jsonPrimitive.contentOrNull)!!,
+        RunConclusion.from(it.getValue("conclusion").jsonPrimitive.contentOrNull)
+      )
+    }
 
     return Pair(
       response.etag(),
       runs.firstOrNull()
     )
   }
-
-  private suspend fun checkExternalRunId(wfRun: JsonObject, externalRunId: String?): Boolean {
-    return externalRunId?.let { rId ->
-      val jobsUrl = wfRun.getValue("jobs_url").jsonPrimitive.content
-      val jobs = client.sendGet(jobsUrl).toJson().jsonObject
-      jobs.getValue("jobs").jsonArray.any { job ->
-        job.jsonObject.getValue("steps").jsonArray.any { step ->
-          step.jsonObject.getValue("name").jsonPrimitive.content == rId
-        }
-      }
-    } ?: true
-  }
-
 
   private fun Long.deltaMs(other: Long): Duration {
     val delta = abs(this - other)

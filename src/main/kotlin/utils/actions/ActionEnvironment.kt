@@ -14,11 +14,6 @@ object ActionEnvironment {
   val GITHUB_RUN_ID by Environment
 
   /**
-   * The job_id of the current job.
-   */
-  val GITHUB_JOB by Environment
-
-  /**
    * The number of (re-)runs of a certain workflow-run.
    */
   val GITHUB_RUN_NUMBER by Environment
