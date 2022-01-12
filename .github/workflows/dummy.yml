@@ -3,10 +3,8 @@ on:
   workflow_dispatch:
     inputs: 
       to-greet:
-        required: false
+        required: true
         description: Whom to greet
-        default: "World"
-        type: string
 
 jobs:
   greetJob:

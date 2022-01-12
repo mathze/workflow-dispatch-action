@@ -17,12 +17,12 @@ inline fun <T> runAction(
   block: (input: T) -> Unit
 ) {
   contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+  outputs["failed"] = "true"
   val a = before()
   try {
     block(a)
     outputs["failed"] = "false"
   } catch (e: Throwable) {
-    outputs["failed"] = "true"
     catch(a, e)
   }
 }

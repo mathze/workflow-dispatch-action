@@ -13,9 +13,9 @@ jobs:
         id: action1
         uses: ./
         with:
-          workflow-name: dummyWithId.yml
+          workflowname: dummyWithId.yml
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
-          use-marker-step: true
+          useIdentifierStep: true
           payload: |
             {
               "to-greet": "first job, first action"
@@ -25,9 +25,9 @@ jobs:
         id: action2
         uses: ./
         with:
-          workflow-name: dummyWithId.yml
+          workflowname: dummyWithId.yml
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
-          use-marker-step: true
+          useIdentifierStep: true
           payload: |
             {
               "to-greet": "first job, second action"
@@ -35,8 +35,8 @@ jobs:
 
       - name: Print results
         run: |
-          echo "Job1, first action:  ${{ steps.action1.outputs.run-id }}"
-          echo "Job1, second action: ${{ steps.action2.outputs.run-id }}"
+          echo "Job1, first action:  ${{ steps.action1.outputs.run_id }}"
+          echo "Job1, second action: ${{ steps.action2.outputs.run_id }}"
 
   runJob2:
     runs-on: ubuntu-latest
@@ -48,8 +48,9 @@ jobs:
         id: action3
         uses: ./
         with:
-          workflow-name: dummyWithId.yml
-          use-marker-step: true
+          workflowname: dummyWithId.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          useIdentifierStep: true
           payload: |
             {
               "to-greet": "second job, first action"
@@ -57,26 +58,4 @@ jobs:
 
       - name: Print result
         run: |
-          echo "Job2, third action:  ${{ steps.action3.outputs.run-id }}"
-
-  runJob3:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Run and wait
-        id: action4
-        uses: ./
-        with:
-          workflow-name: dummyWithId.yml
-          use-marker-step: true
-          payload: |
-            {
-              "to-greet": "third job, first action"
-            }
-          run-id: dummy
-
-      - name: Print result
-        run: |
-          echo "Job3, fourth action:  ${{ steps.action4.outputs.run-id }}"
+          echo "Job2, third action:  ${{ steps.action3.outputs.run_id }}"

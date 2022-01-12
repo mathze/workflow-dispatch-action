@@ -1,108 +1,23 @@
 = Workflow dispatch action
-:toc: preamble
-:current_version: v1
 
 An action that creates a workflow dispatch event and returns the run_id of started workflow.
 
-== About
-In contrast to other existing dispatch-actions, this action provides a way to reliably identify the workflow run (see <<With marker step>>). +
-To provide most flexibility, the action supports three different modes.
-
-1. 'Trigger' mode: +
-In this mode the action triggers the workflow and just tires to receive the workflow run id.
-This can be used if you want to get the run id and wait for it in another step/job later on.
-This mode will be enabled if the `workflow-name` input is present.
-
-2. 'Wait' mode: +
-In this mode the action waits until a workflow run finishes.
-This can be used in combination with 1. mode or if you get the run id from somewhere else.
-The mode will be enabled if `run-id` is given.
-In this case the run-id is expected to be valid otherwise it results in error.
-
-3. 'Trigger and wait' mode: +
-This is a combination of 1. and 2. mode.
-To enable it, specify the `workflow-name` and `run-id` inputs.
-In this case, the `run-id` isn't required to be valid because it gets replaced by the one detected in the trigger step.
-
-== Usage
-=== Simple usage
-The following examples show the minimum setup without using a marker step.
-This mode is handy if you know that there will be only on workflow run at a time.
-
-[source,yaml,title="With direct wait", subs="attributes"]
+== Setup
+[source,yaml, title="With direct wait"]
 ----
 #...
   - name: "Start and wait for a workflow"
-    id: startAndWaitWorkflow
-    uses: mathze/workflow-dispatch-action@{current_version}
+    id: startWorkflow
+    uses: mathze/workflow-dispatch-action@v1
     with:
-      workflow-name: my-workflow.yml
+      workflowname: my-workflow.yml
       token: ${{ secrets.GITHUB_TOKEN }}
-      run-id: dummy
 #...
   - name: "Reuse workflow run id"
-    run: "echo ${{ steps.startAndWaitWorkflow.outputs.run-id }}
+    run: "echo ${{ steps.startWorkflow.outputs.run_id }}
 ----
-
-[source,yaml,title="Trigger and independent wait", subs="attributes"]
-----
-#...
-  - name: "Start a workflow"
-    id: startWorkflow
-    uses: mathze/workflow-dispatch-action@{current_version}
-    with:
-      workflow-name: my-workflow.yml
-      token: ${{ secrets.GITHUB_TOKEN }}
-#...
-  - name: "wait to complete"
-    uses: mathze/workflow-dispatch-action@{current_version}
-    with:
-      token: ${{ secrets.GITHUB_TOKEN }}
-      run-id: ${{ steps.startWorkflow.outputs.run-id }}
-----
-
-=== With marker step
-
-[source,yaml,title="Caller workflow", subs="attributes"]
-----
-#...
-  - name: "Start workflow"
-    id: startWorkflow
-    uses: mathze/workflow-dispatch-action@{current_version}
-    with:
-      workflow-name: workflow-with-marker.yml
-      token: ${{ secrets.GITHUB_TOKEN }}
-      use-marker-step: true
-#...
-  - name: "wait to complete"
-    uses: mathze/workflow-dispatch-action@{current_version}
-    with:
-      token: ${{ secrets.GITHUB_TOKEN }}
-      run-id: ${{ steps.startWorkflow.outputs.run-id }}
-----
-
-[source, yaml, title="workflow-with-marker.yml"]
-----
-on:
-  workflow-dispatch:
-    inputs:
-      external_ref_id: #<.>
-        description: Id to use for unique run detection
-        required: false
-        type: string
-        default: ""
-jobs:
-  beforeAll:
-    runs-on: ubuntu-latest
-    steps:
-      - name: ${{ github.event.inputs.external_ref_id }} #<.>
-        run: echo
-----
-<1> The target workflow has to define the `external_ref_id` input
-<2> Here we define a step with the name of the paste input.
 
 == Inputs
-
 |===
 |Input|Description|Required|Default
 
@@ -116,72 +31,36 @@ jobs:
 |`false`
 |Current repository
 
-|`token`
-|The token used to trigger the workflow. +
-The token must have `repo` scope.
-|`false`
-|github.token
-
-|`workflow-name`
-|Name of the workflow to trigger. E.g. 'my-workflow.yml'. +
-(Enables trigger-mode)
-|`conditional`<<mode, ^(M)^>>
-|-
-
 |`ref`
-|The git reference for the workflow.
-The reference can be a branch or tag name.
+|The git reference for the workflow. The reference can be a branch or tag name.
 |`false`
-|Default branch of the target repository.
+|Default branch of the repository.
+
+|`workflowname`
+|Name of the workflow to trigger. +
+Can be the name of the workflow or its ID.
+|`true`
+|-
 
 |`payload`
 |Json-String representing any payload/input that shall be sent with the dispatch event.
 |`false`
 | {}
 
-|`trigger-timeout`
-|Maximum duration<<duration, ^(D)^>> to use to getting workflow run id.
-|`false`
-|1 minute
-
-|`trigger-interval`
-|Duration<<duration, ^(D)^>> to wait between consecutive tries to retrieve a workflow run id.
-|`false`
-|1 second
-
-|`use-marker-step`
-|Indicates if the action shall look for a marker-step to find the appropriate run.
-|`false`
-|`false`
-
-|`run-id`
-|A workflow run id for which to wait. (Enables wait-mode)
-|`conditional`<<mode, ^(M)^>>
+|`token`
+|The token used to trigger the workflow. +
+The token must have `repo` scope.
+|`true`
 |-
 
-|`wait-timeout`
-|Maximum duration<<duration, ^(D)^>> to use to wait until a workflow run completes.
-|`false`
-|10 minutes
-
-|`wait-interval`
-|Duration<<duration, ^(D)^>> to wait between consecutive queries on the workflow run status.
-|`false`
-|1 seconds
-
-|`fail-on-error`
+|`failOnError`
 |Defines if the action should result in a build failure, if an error was discovered
 |`false`
 |`false`
 
 |===
-[#mode]
-(M): Controls the mode of the action.
-[#duration]
-(D): Duration can be specified in either ISO-8601 Duration format or in specific format e.g. `1m 10s` (details see https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.time/-duration/parse.html)
 
 == Outputs
-
 |===
 |Output|Type|Description
 
@@ -189,35 +68,8 @@ The reference can be a branch or tag name.
 |Boolean
 |Indicates if there was an issue with the action run, and the workflow may not have been triggered correctly.
 
-|`run-id`
+|`run_id`
 |String
-|The run id of the started workflow.
-May be empty if no run was found or on error.
+|The run id of the started workflow. May be empty if no run was found or on error.
 
 |===
-
-== How it works
-Trigger-mode::
-1. Determine workflow id for given workflow-name
-2. If `use-marker-step` is enabled, generate a unique `external_ref_id` (<CURRENT_RUN_ID>-<CURRENT_JOB_ID>-<UUID>)
-3. Trigger dispatch event to target workflow and store the `dispatch-date` (also pass `external_ref_id` in input if enabled)
-4. Query workflow runs for the given workflow (-id) that are younger than `dispatch-date` and targeting the given `ref` +
-The query use the _etag_ to reduce rate-limit impact
-5. Filter found runs
-+
-    .. *If `use-marker-step` is enabled*
-    ... Filter runs that are not 'queued'
-    ... Get step details for each run
-    ... Find the step with the name of generated `external_ref_id`
-    ... Take first (if any)
-    .. *Else*
-    ... Order runs by date created
-    ... Take first (if any)
-+
-[NOTE]
-All subsequent requests use _etag_'s
-
-6. Repeat 4 and 5 until a matching workflow run was found or `trigger-timeout` exceeds. Between each round trip we pause for `trigger-interval` units.
-7. Return the found workflow run id or raise/log error (depending on `failOnError`)
-
-Wait-mode::
