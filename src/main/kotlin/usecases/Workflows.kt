@@ -45,8 +45,7 @@ class Workflows(private val client: GhRestClient) {
       )
     ).toString()
     val response = client.sendPost("actions/workflows/$workflowId/dispatches", body)
-    info("Headers: ${response.headers.toMap()}")
-    info("Body ${response.readBody()}")
+    info(response.headers.toString())
     return response.headers["date"] ?: Date().toISOString()
   }
 
