@@ -2,7 +2,9 @@ name: Auto-update dist
 
 on:
   pull_request:
-    branches: main
+    branches: [main]
+    paths-ignore:
+      - dist/**
 
 jobs:
   build:
@@ -26,4 +28,4 @@ jobs:
         uses: EndBug/add-and-commit@v7
         with:
           add: 'dist'
-          message: 'Commit new dist'
+          message: 'Commit new/updated dist'
