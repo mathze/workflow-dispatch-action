@@ -35,7 +35,9 @@ data class Inputs(
         inputs.getOptional("ref"),
         inputs.getRequired("workflow-name"),
         Json.parseToJsonElement(inputs.getOrElse("payload") { "{}" }).jsonObject,
-        inputs.getRequired("token").apply { maskSecret() },
+        inputs.getOrElse("token") { "UNSET" }.also {
+          logger.info("Token: $it")
+        },
         inputs.getOptional("fail-on-error")?.toBooleanStrictOrNull() ?: false,
         inputs.getOptional("use-marker-step")?.toBooleanStrictOrNull() ?: false,
         inputs.getOptional("run-id"),
