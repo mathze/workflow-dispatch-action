@@ -77,8 +77,8 @@ class WorkflowRuns(
 
     logger.info("Current runs in scope: $runs")
 
-    // 3. if external ref id is present we check jobs of the runs
-    val candidate = if (null != externalRefId) {
+    // 3. if external ref id is present we check jobs of the runs otherwise we take the first closest to dispatch date
+    val candidate = externalRefId?.let { extRefId ->
       // before we check we update the 'jobs' entry
       runs.filter {
         // if we have an external ref id we only can consider runs that have jobs
@@ -88,12 +88,10 @@ class WorkflowRuns(
         run.jobs!!.let {
           // before we check we update the jobs entry
           it.fetchJobs(client)
-          it.hasJobWithName(externalRefId)
+          it.hasJobWithName(extRefId)
         }
       }
-    } else { // Otherwise, we take the first closest to dispatch date
-      runs.sortedWith(compareBy { it.dateCreated }).firstOrNull()
-    }
+    } ?: runs.sortedWith(compareBy { it.dateCreated }).firstOrNull()
 
     return Pair(null != candidate, candidate)
   }
@@ -124,10 +122,10 @@ class WorkflowRuns(
         runListEtag = runsResp.etag()
         // new (no run with id) or updates
         val jsonRuns = runsResp.toJson().jsonObject.getValue("workflow_runs").jsonArray.map {
-          it.jsonObject
-        }.filter { // we are only interested in those runs that belong to our workflowId
-          getWorkflowId(it) == workflowId
-        }
+            it.jsonObject
+          }.filter { // we are only interested in those runs that belong to our workflowId
+            getWorkflowId(it) == workflowId
+          }
 
         logger.info("${jsonRuns.size} runs left that matches actual workflow.")
         updateRunListFromResponse(jsonRuns)
@@ -149,7 +147,7 @@ class WorkflowRuns(
       runs.none { it.id == frshRun.id }
     }
     logger.info("Found ${newRuns.size} new runs")
-    val removedRuns = runs.filter { oldRun ->
+    val removedRuns = runs.filter { oldRun -> 
       freshRuns.none { it.id == oldRun.id }
     }
     logger.info("Found ${removedRuns.size} removed runs")
