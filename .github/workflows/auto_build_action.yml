@@ -1,8 +1,10 @@
 name: Auto-update dist
 
 on:
+  push:
+    branches: [ main, master ]
   pull_request:
-    branches: main
+    branches: [ main, master ]
 
 jobs:
   build:
@@ -11,17 +13,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+      
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v1
         with:
-          distribution: 'temurin'
-          java-version: 17
-          cache: 'gradle'
-
+          java-version: 15
+          
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        
       - name: Build
         run: ./gradlew build
-
+        
       - name: Commit dist
         uses: EndBug/add-and-commit@v7
         with:
