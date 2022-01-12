@@ -1,4 +1,4 @@
-name: Test with external id
+name: Test
 on:
   workflow_dispatch
 
