@@ -19,17 +19,10 @@ jobs:
       - name: "Run action with payload"
         id: dispatchPayload
         uses: ./
-        with:
+        with: 
           workflowname: dummy.yml
           payload: '{ "to-greet": "${{ env.GITHUB_ACTOR }}" }'
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "Run action with token from env"
-        id: dispatchPayload
-        uses: ./
-        with:
-          workflowname: dummy.yml
-          payload: '{ "to-greet": "${{ env.GITHUB_ACTOR }}" }'
 
       - name: "Print run-ids"
         run: |
