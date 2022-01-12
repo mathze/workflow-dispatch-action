@@ -6,10 +6,10 @@ on:
         required: true
         description: Whom to greet
 
-jobs:
+jobs: 
   greetJob:
     runs-on: ubuntu-latest
     steps:
       - name: Greet
         run: |
-          echo "Hello ${{ github.event.inputs.to-greet }}"
+          echo "Hello ${{ github.event.inputs.to-greet }}

@@ -42,6 +42,7 @@ fun failOrError(
 
 suspend fun delay(ms: Long): Unit = suspendCoroutine { continuation ->
   setTimeout({
+    println("timeout")
     continuation.resume(Unit)
   }, ms)
 }
