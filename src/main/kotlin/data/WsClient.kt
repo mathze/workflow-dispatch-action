@@ -1,14 +1,14 @@
 package data
 
-import com.rnett.action.httpclient.HttpClient
-import com.rnett.action.httpclient.HttpResponse
 import com.rnett.action.httpclient.MutableHeaders
+import com.rnett.action.serialization.JsonHttpClient
+import com.rnett.action.serialization.JsonHttpResponse
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
 
 open class WsClient(private val token: String) {
   protected val client by lazy {
-    HttpClient {
+    JsonHttpClient {
       bearerAuth(token)
       headers {
         applyGhDefaults(this)
@@ -21,4 +21,4 @@ open class WsClient(private val token: String) {
   }
 }
 
-suspend inline fun HttpResponse.toJson() = Json.parseToJsonElement(readBody())
+suspend inline fun JsonHttpResponse.toJson() = Json.parseToJsonElement(readBody())
