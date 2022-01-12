@@ -1,6 +1,5 @@
 package data
 
-import com.rnett.action.core.logger.debug
 import com.rnett.action.core.logger.info
 import com.rnett.action.httpclient.MutableHeaders
 import io.ktor.client.request.HttpRequestBuilder
@@ -15,7 +14,7 @@ import utils.actions.ActionEnvironment
 class GhGraphClient(token: String) : WsClient(token) {
 
   suspend fun sendQuery(query: String, variables: JsonObject? = null): JsonElement {
-    debug("Sending request >>$query<< to $graphApiUrl")
+    info("Sending request >>$query<< to $graphApiUrl")
     val req = buildJsonObject {
       put("query", JsonPrimitive(query))
       variables?.let {
@@ -24,9 +23,8 @@ class GhGraphClient(token: String) : WsClient(token) {
     }
 
     val response = client.post(graphApiUrl, req.toString())
-    val result = response.toJson()
-    info("Response $result")
-    return result
+    info("Response ${response.readBody()}")
+    return response.toJson()
   }
 
   private val graphApiUrl by lazy {
