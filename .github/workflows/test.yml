@@ -1,4 +1,3 @@
-name: Test
 on:
   workflow_dispatch
 
@@ -21,7 +20,7 @@ jobs:
         uses: ./
         with: 
           workflowname: dummy.yml
-          payload: '{ "to-greet": "${{ env.GITHUB_ACTOR }}" }'
+          payload: "{'to-greet':'${{ env.GITHUB_ACTOR }}'}"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Print run-ids"
