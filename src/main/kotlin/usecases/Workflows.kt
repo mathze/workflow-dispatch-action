@@ -8,7 +8,6 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -53,13 +52,12 @@ class Workflows(private val client: GhRestClient) {
 
     logger.info("Sending trigger with body $body")
     val response = client.sendPost("actions/workflows/$workflowId/dispatches", body)
-    if (HttpStatusCode.MultipleChoices.value <= response.statusCode) {
+    if (HttpStatusCode.BadRequest.value <= response.statusCode) {
       logger.error("Response: ${response.readBody()}")
       throw ActionFailedException("Error starting workflow! Details see log")
     }
-    val date = response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
-    logger.info("Dispatched event at '$date'. (Header: ${response.headers.toMap()}\nBody: ${response.readBody()})")
-    return date
+
+    return response.headers["date"] ?: throw ActionFailedException("No date header found! Got ${response.headers.toMap()}")
   }
 
   /**
@@ -80,17 +78,14 @@ class Workflows(private val client: GhRestClient) {
   ): WorkflowRun? = logger.withGroup("Wait workflow run created") {
     val start = Date()
     var result: Pair<String?, WorkflowRun?> = Pair(null, null)
-    var delta = 0.seconds
     do {
       result = findWorkflowRun(workflowId, createdTime, ref, result).also {
         if (null == it.second) {
-          logger.info("No run found, retry in 1s")
-          setTimeout({ }, 1000)
+          logger.info("No run found, retry in 500ms")
+          setTimeout({ }, 500)
         }
       }
-      delta = Date().delta(start)
-      logger.info("Time passed since start: $delta")
-    } while ((null == result.second) && (delta < maxTimeout))
+    } while ((null == result.second) && (Date().delta(start) < maxTimeout))
 
     return result.second
   }
@@ -112,7 +107,7 @@ class Workflows(private val client: GhRestClient) {
       }
     }
 
-    if (HttpStatusCode.NotModified.value == response.statusCode) {
+    if (response.statusCode == HttpStatusCode.NotModified.value) {
       // if we got not modified we used an etag -> prev cannot be null
       logger.info("No updates")
       return prev
@@ -123,15 +118,15 @@ class Workflows(private val client: GhRestClient) {
     }
     logger.info("Found ${wfRuns.size} matching workflow runs.")
     val runs = wfRuns.filter {
-      val wfId = it.getValue("workflow_id").jsonPrimitive.content
+      val wfId = it.getValue("workflow_id").jsonPrimitive.toString()
       workflowId == wfId
     }.map {
       WorkflowRun(
-        it.getValue("id").jsonPrimitive.content,
+        it.getValue("id").toString(),
         null,
         ref,
-        RunStatus.from(it.getValue("status").jsonPrimitive.contentOrNull)!!,
-        RunConclusion.from(it.getValue("conclusion").jsonPrimitive.contentOrNull)
+        RunStatus.from(it.getValue("status").toString()),
+        RunConclusion.from(it.getValue("conclusion").toString())
       )
     }
 
