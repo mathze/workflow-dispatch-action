@@ -5,7 +5,6 @@ import data.GhRestClient
 import data.etag
 import data.toJson
 import io.ktor.http.HttpStatusCode
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
@@ -41,11 +40,11 @@ class Workflows(private val client: GhRestClient) {
    */
   suspend fun triggerWorkflow(workflowId: String, ref: String, inputs: JsonObject? = null): String {
     val body = JsonObject(
-      mutableMapOf<String, JsonElement>(
+      mutableMapOf(
         "ref" to JsonPrimitive(ref),
       ).also { 
         if(null != inputs) {
-          it["inputs"] = inputs
+          "inputs" to inputs
         }
       }
     ).toString()
