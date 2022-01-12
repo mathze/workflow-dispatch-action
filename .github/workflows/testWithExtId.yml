@@ -13,7 +13,7 @@ jobs:
         id: action1
         uses: ./
         with:
-          workflowname: dummyWithId.yml
+          workflowname: dummy.yml
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
           useIdentifierStep: true
           payload: |
@@ -25,7 +25,7 @@ jobs:
         id: action2
         uses: ./
         with:
-          workflowname: dummyWithId.yml
+          workflowname: dummy.yml
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
           useIdentifierStep: true
           payload: |
@@ -48,7 +48,7 @@ jobs:
         id: action3
         uses: ./
         with:
-          workflowname: dummyWithId.yml
+          workflowname: dummy.yml
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
           useIdentifierStep: true
           payload: |
