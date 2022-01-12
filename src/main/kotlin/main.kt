@@ -2,7 +2,8 @@ import com.rnett.action.core.inputs.getOptional
 import com.rnett.action.core.inputs.getOrElse
 import com.rnett.action.core.inputs.getRequired
 import com.rnett.action.core.logger
-import com.rnett.action.core.maskSecret
+import com.rnett.action.core.logger.info
+import com.rnett.action.core.logger.notice
 import data.GhGraphClient
 import data.GhRestClient
 import kotlinx.serialization.json.Json
@@ -31,7 +32,7 @@ suspend fun main(): Unit = runAction(
   val workflowRun = logger.withGroup("Triggering workflow") {
     val workflows = Workflows(client)
     val wfId = workflows.findWorkflowId(inputs.workflowName)
-    logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
+    info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
     val requestTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
     workflows.waitForWorkflowRunCreated(wfId, requestTime, inputs.ref!!, MAX_WORKFLOW_RUN_WAIT)
   }
@@ -39,7 +40,7 @@ suspend fun main(): Unit = runAction(
   if (null == workflowRun) {
     failOrError("Unable to receive workflow run within $MAX_WORKFLOW_RUN_WAIT!", inputs.failOnError)
   } else {
-    logger.notice("Found workflow run with ${workflowRun.id}")
+    notice("Found workflow run with ${workflowRun.id}")
   }
 }
 
@@ -55,11 +56,9 @@ fun resolveInputs() = logger.withGroup("Reading inputs") {
     getOptional("ref"),
     getRequired("workflowname"),
     Json.parseToJsonElement(getOrElse("payload") { "{}" }).jsonObject,
-    getRequired("token").apply { maskSecret() },
+    getRequired("token"),
     getOptional("failOnError")?.toBooleanStrictOrNull() ?: false
-  ).also { 
-    logger.info("Got inputs: $it")
-  }
+  )
 }
 
 suspend fun detectDefaultBranch(inputs: Inputs): String {
@@ -76,9 +75,10 @@ suspend fun detectDefaultBranch(inputs: Inputs): String {
 
   return logger.withGroup("Retrieve default branch") {
     val response = ghClient.sendQuery(request).jsonObject
+    info("Got response")
     val data = response["data"]!!.jsonObject
     val result = data["repository"]!!.jsonObject["defaultBranchRef"]!!.jsonObject["name"]!!.jsonPrimitive.content
-    logger.info("ℹ️ Detected branch '$result' as default branch of '$owner/$repo'")
+    info("ℹ️ Detected branch '$result' as default branch of '$owner/$repo'")
     result
   }
 }
