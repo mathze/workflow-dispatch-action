@@ -49,7 +49,6 @@ class Workflows(private val client: GhRestClient) {
       }
     ).toString()
 
-    logger.info("Sending trigger with body $body")
     val response = client.sendPost("actions/workflows/$workflowId/dispatches", body)
     if (HttpStatusCode.BadRequest.value <= response.statusCode) {
       logger.error("Response: ${response.readBody()}")
