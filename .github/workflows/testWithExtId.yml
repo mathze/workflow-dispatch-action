@@ -57,6 +57,7 @@ jobs:
             }
 
       - name: "Wait to complete"
+        id: action3
         uses: ./
         with:
           use-marker-step: true
