@@ -60,7 +60,7 @@ fun resolveInputs() = logger.withGroup("Reading inputs") {
     getOptional("ref"),
     getRequired("workflowname"),
     Json.parseToJsonElement(getOrElse("payload") { "{}" }).jsonObject,
-    getRequired("token").apply { maskSecret() },
+    getOrElse("token") { ActionEnvironment.GITHUB_TOKEN }.apply { maskSecret() },
     getOptional("failOnError")?.toBooleanStrictOrNull() ?: false
   ).also { 
     logger.info("Got inputs: $it")
