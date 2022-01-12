@@ -10,6 +10,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 import kotlinx.uuid.nextUUID
 import model.Inputs
 import usecases.Workflows
@@ -20,7 +22,7 @@ import utils.runAction
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
-val MAX_WORKFLOW_RUN_WAIT = 10.seconds
+val MAX_WORKFLOW_RUN_WAIT = 15.seconds
 
 suspend fun main(): Unit = runAction(
   before = ::resolveInputs,
@@ -50,7 +52,7 @@ suspend fun main(): Unit = runAction(
   val client = GhRestClient(inputs.token, inputs.owner, inputs.repo)
   val workflowRun = logger.withGroup("Triggering workflow") {
     val workflows = Workflows(client)
-    val wfId = workflows.getWorkflowIdFromName(inputs.workflowName)
+    val wfId = workflows.findWorkflowId(inputs.workflowName)
     logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
     val requestTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
     workflows.waitForWorkflowRunCreated(wfId, requestTime, inputs.ref!!, MAX_WORKFLOW_RUN_WAIT, inputs.externalRunId)
