@@ -3,7 +3,7 @@ on:
   workflow_dispatch
 
 jobs:
-  runJob1:
+  runAction1:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -35,10 +35,10 @@ jobs:
 
       - name: Print results
         run: |
-          echo "Job1, first action:  ${{ steps.action1.outputs.run_id }}"
-          echo "Job1, second action: ${{ steps.action2.outputs.run_id }}"
+          echo "First action:   ${{ steps.action1.outputs.run_id }}"
+          echo "Sechond action: ${{ steps.action2.outputs.run_id }}"
 
-  runJob2:
+  runAction2:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -58,4 +58,4 @@ jobs:
 
       - name: Print result
         run: |
-          echo "Job2, third action:  ${{ steps.action3.outputs.run_id }}"
+          echo "Third action:   ${{ steps.action3.outputs.run_id }}"
