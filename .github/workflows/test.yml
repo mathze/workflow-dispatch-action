@@ -21,10 +21,7 @@ jobs:
         uses: ./
         with:
           workflowname: dummy.yml
-          payload: |
-            {
-              "to-greet": "${{ github.actor }}"
-            }
+          payload: '{ "to-greet": "${{ env.GITHUB_ACTOR }}" }'
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Run action with token from env"
@@ -32,7 +29,7 @@ jobs:
         uses: ./
         with:
           workflowname: dummy.yml
-          payload: '{ "to-greet": "${{ github.actor }}" }'
+          payload: '{ "to-greet": "${{ env.GITHUB_ACTOR }}" }'
 
       - name: "Print run-ids"
         run: |
