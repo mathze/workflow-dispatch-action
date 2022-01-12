@@ -63,7 +63,6 @@ suspend fun main(): Unit = runAction(
 
     if (null == workflowRun) {
       failOrError("Unable to receive workflow run within ${inputs.triggerTimeout}!", inputs.failOnError)
-      return@runAction
     } else {
       logger.notice("Found workflow run with ${workflowRun.id}")
       outputs["run-id"] = workflowRun.id
