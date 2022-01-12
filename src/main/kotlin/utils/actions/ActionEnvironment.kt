@@ -1,7 +1,6 @@
 package utils.actions
 
 import NodeJS.get
-import com.rnett.action.github.github
 import process
 import kotlin.reflect.KProperty
 
@@ -35,6 +34,11 @@ object ActionEnvironment {
    * URL to GitHub's GraphQL api.
    */
   val GITHUB_GRAPHQL_URL by Environment
+
+  /**
+   * PA-Token used to execute actions within the workflow run.
+   */
+  val GITHUB_TOKEN by Environment
 }
 
 private object Environment {
