@@ -1,0 +1,31 @@
+name: Auto-update dist
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - dist/**
+
+jobs:
+  build:
+    name: Update dist
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: 'gradle'
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Commit dist
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: 'dist'
+          message: 'Commit new/updated dist'

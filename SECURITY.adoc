@@ -1,0 +1,7 @@
+= Security Policy
+
+== Supported Versions
+Only latest version will receive security updates.
+
+== Reporting a Vulnerability
+You can file a security vulnerability https://github.com/mathze/workflow-dispatch-action/security/advisories/new[here]

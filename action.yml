@@ -1,0 +1,105 @@
+name: Workflow Dispatch Action
+description: >
+  Action to trigger a workflow dispatch event and retrieves the run-id.
+  Also supports waiting on triggered workflow to complete.
+
+author: mathze
+
+inputs:
+  # general inputs
+  owner:
+    required: false
+    description: Organization or user under which the repository of the workflow resist. Defaults to current owner.
+
+  repo:
+    required: false
+    description: Name of the repository the workflow resist in. Defaults to current repository
+
+  token:
+    required: true
+    description: >
+      The token used to work with the API. The token must have repo scope.
+      Because this token is also used to trigger dispatch event, you can not use the GITHUB_TOKEN as explained here 
+      https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token.
+
+  fail-on-error:
+    required: false
+    default: "false"
+    description: >
+      Defines if the action should result in a build failure, if an error was discovered. Defaults to `false`.
+      You can use the `failed` output to check for errors.
+
+  # trigger only inputs
+  workflow-name:
+    required: false
+    description: Name of the workflow to trigger. Can be the name of the workflow or its ID.
+
+  ref:
+    description: >
+      The git reference for the workflow. The reference can be a branch or tag name.
+      Defaults to default branch of the repository.
+    required: false
+
+  payload:
+    description: Json-String representing any payload/input that shall be sent with the dispatch event.
+    required: false
+
+  trigger-timeout:
+    description: Maximum time to use to getting workflow run id. Defaults to 1 minute.
+    required: false
+
+  trigger-interval:
+    description: Time to wait between consecutive tries to retrieve a workflow run id. Defaults to 1 second.
+    required: false
+
+  use-marker-step:
+    required: false
+    default: "false"
+    description: >
+      Indicates that the action shall send a unique id (external_ref_id) within the `inputs` payload.
+      To detect the correct workflow run, your target workflow has to have at first step, in the earliest job,
+      the name of this id.
+      
+      Example:
+      # ...
+        inputs:
+          external_ref_id:
+            required: false
+      # ...
+      jobs:
+        beforeAll:
+          runs-on: ubuntu-latest
+          steps:
+            - name: $ { { github.event.inputs.external_ref_id } }
+      # ...
+
+  # wait specific stuff
+  run-id:
+    required: false
+    description: >
+      Workflow run id for which to wait.
+      If set, enables the wait mode.
+
+  wait-timeout:
+    required: false
+    description: Maximum time to use to wait until a workflow run completes. Defaults to 10 minutes.
+
+  wait-interval:
+    required: false
+    description: Time to wait between consecutive queries on the workflow run status. Defaults to 1 second.
+
+outputs:
+  failed:
+    description: >
+      Indicates if there was an issue with the action run, and the workflow may not have
+      been triggered correctly. [true, false]
+  run-id:
+    description: The id of the started workflow run. May be empty if error or timeout occured
+
+runs:
+  using: node12
+  main: dist/index.js
+
+branding:
+  icon: repeat
+  color: green

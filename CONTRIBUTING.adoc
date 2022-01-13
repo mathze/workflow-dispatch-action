@@ -1,0 +1,7 @@
+= Contributing to robotframework-gradle-plugin
+:toc:
+
+👍🎉 First off, thanks for taking the time to contributing 🎉👍
+
+== Code of conduct
+This project and everyone participating in it is governed by the link:CODE_OF_CONDUCT.adoc[Code of Conduct]

@@ -1,0 +1,91 @@
+name: Test with external id
+on:
+  workflow_dispatch
+
+jobs:
+  runJob1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Run first action"
+        id: action1
+        uses: ./
+        with:
+          workflow-name: dummyWithId.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          use-marker-step: true
+          payload: |
+            {
+              "to-greet": "first job, first action"
+            }
+
+      - name: "Run second action"
+        id: action2
+        uses: ./
+        with:
+          workflow-name: dummyWithId.yml
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          use-marker-step: true
+          payload: |
+            {
+              "to-greet": "first job, second action"
+            }
+
+      - name: Print results
+        run: |
+          echo "Job1, first action:  ${{ steps.action1.outputs.run-id }}"
+          echo "Job1, second action: ${{ steps.action2.outputs.run-id }}"
+
+  runJob2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Run separate dispatch"
+        id: action3
+        uses: ./
+        with:
+          workflow-name: dummyWithId.yml
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          payload: |
+            {
+              "to-greet": "second job, first action"
+            }
+
+      - name: "Wait to complete"
+        uses: ./
+        with:
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          run-id: ${{ steps.action3.outputs.run-id }}
+
+      - name: Print result
+        run: |
+          echo "Job2, third action:  ${{ steps.action3.outputs.run-id }}"
+
+  runJob3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run and wait
+        id: action4
+        uses: ./
+        with:
+          workflow-name: dummyWithId.yml
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          payload: |
+            {
+              "to-greet": "third job, first action"
+            }
+          run-id: dummy
+
+      - name: Print result
+        run: |
+          echo "Job3, fourth action:  ${{ steps.action4.outputs.run-id }}"

@@ -1,0 +1,29 @@
+name: Dummy with external id
+on:
+  workflow_dispatch:
+    inputs:
+      to-greet:
+        required: false
+        description: Whom to greet
+        default: "World"
+        type: string
+      external_ref_id:
+        description: Id to use for unique run detection
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  beforeAll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ${{ github.event.inputs.external_ref_id }}
+        run: echo
+
+  greetJob:
+    runs-on: ubuntu-latest
+    needs: beforeAll
+    steps:
+      - name: Greet
+        run: |
+          echo "Hello ${{ github.event.inputs.to-greet }}"

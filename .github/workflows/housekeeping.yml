@@ -1,0 +1,40 @@
+name: Housekeeping
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+    inputs:
+      retain_days:
+        type: string
+        default: "0"
+        description: "Minimum age of runs to keep"
+        required: false
+      min_num_runs:
+        type: string
+        default: "0"
+        description: "Min number of runs to keep"
+        required: false
+
+jobs:
+  clean-workwlow-runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup
+        id: setup
+        run: |
+          if [[ -z "${{ github.event.inputs.retain_days }}" ]]; then
+            echo "::set-output name=retain_days::1"
+          else
+            echo "::set-output name=retain_days::${{ github.event.inputs.retain_days }}"
+          fi
+          if [[ -z "${{ github.event.inputs.min_num_runs }}" ]]; then
+            echo "::set-output name=min_runs::1"
+          else
+            echo "::set-output name=min_runs::${{ github.event.inputs.min_num_runs }}"
+          fi
+
+      - name: clean runs
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          retain_days: ${{ steps.setup.outputs.retain_days }}
+          keep_minimum_runs: ${{ steps.setup.outputs.min_runs }}
