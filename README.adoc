@@ -1,4 +1,9 @@
 = Workflow dispatch action
+ifdef::env-github[]
+:note-caption: :information_source:
+:warning-caption: :warning:
+:important-caption: :bangbang:
+endif::[]
 :toc: preamble
 :current_version: v1
 
@@ -102,7 +107,7 @@ jobs:
 <2> Here we define a step with the name of the paste input.
 
 == Inputs
-[cols="1a,2a,1a,2a",options="header"]
+[cols="~a,30%a,20%a,30%a",options="header"]
 |===
 |Input|Description|``R``equired/ +
 ``O``ptional|Default
@@ -118,9 +123,11 @@ jobs:
 |Current repository
 
 |`token`
-|The token used to work with the API. The token must have `repo` scope.
+|The token used to work with the API. +
+The token must have `repo` scope.
 [IMPORTANT]
-Because token is used to also trigger dispatch-event, you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token[here]
+Because token is used to also trigger dispatch-event, +
+you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token[here]
 |*R*
 |-
 
@@ -138,6 +145,9 @@ The reference can be a branch or tag name.
 
 |`payload`
 |Json-String representing any payload/input that shall be sent with the dispatch event.
+[WARNING]
+Be careful when using secrets within payload! +
+They might get exposed in the target-workflow!
 |*O*
 | {}
 

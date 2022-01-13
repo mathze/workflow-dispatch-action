@@ -1,7 +1,6 @@
 name: Workflow Dispatch Action
 description: >
-  Action to trigger a workflow dispatch event and retrieves the run-id.
-  Also supports waiting on triggered workflow to complete.
+  Triggers a workflow and retrieves the run-id and also supports waiting on it to complete.
 
 author: mathze
 
