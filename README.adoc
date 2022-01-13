@@ -233,3 +233,4 @@ All subsequent requests use _etag_'s
 7. Return the found workflow run id or raise/log error (depending on `failOnError`)
 
 Wait-mode::
+ This is quite simple, with the former retrieved workflow-run-id we query the state of the workflow-run until it becomes _complete_ (or `wait-timeout` exceeds). All queries uses _etag_'s
