@@ -13,7 +13,9 @@ data class WorkflowRun(
 enum class RunStatus(private val value: String) {
   QUEUED("queued"),
   IN_PROGRESS("in_progress"),
-  COMPLETED("completed");
+  COMPLETED("completed"),
+  REQUESTED("requested"),
+  WAITING("waiting");
 
   fun match(restState: String): Boolean = value == restState
 
