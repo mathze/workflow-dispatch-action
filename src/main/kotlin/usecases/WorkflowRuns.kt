@@ -82,7 +82,9 @@ class WorkflowRuns(
       // before we check we update the 'jobs' entry
       runs.filter {
         // if we have an external ref id we only can consider runs that have jobs
-        it.status != RunStatus.QUEUED
+        it.status != RunStatus.QUEUED &&
+        it.status != RunStatus.REQUESTED &&
+        it.status != RunStatus.WAITING
       }.firstOrNull { run ->
         // normally here job should never be null (ensured by updateRunDetails)
         run.jobs!!.let {
