@@ -78,7 +78,9 @@ suspend fun main(): Unit = runAction(
   inputs.runId?.let { runId ->
     logger.info("Going to wait until run $runId completes")
     val wfRun = WorkflowRuns(client)
-    wfRun.waitWorkflowRunCompleted(runId, inputs.waitTimeout, inputs.waitInterval)
+    val result = wfRun.waitWorkflowRunCompleted(runId, inputs.waitTimeout, inputs.waitInterval)
+    outputs["run-status"] = result.status.value
+    outputs["run-conclusion"] = result.conclusion?.value ?: ""
   }
 }
 
