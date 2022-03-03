@@ -21,9 +21,9 @@ enum class RunStatus(private val value: String) {
 
   companion object {
     fun from(value: String?) = value?.let {
-      values().first {
+      values().firstOrNull {
         it.match(value)
-      }
+      } ?: throw IllegalArgumentException("Cannot map unknown value '$value' to RunStatus!")
     }
   }
 }
@@ -42,7 +42,7 @@ enum class RunConclusion(val value: String) {
     fun from(value: String?) = value?.let {
       values().firstOrNull {
         it.value == value
-      }
+      } ?: throw IllegalArgumentException("Cannot map unknown value '$value' to RunConclusion!")
     }
   }
 }

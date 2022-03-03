@@ -79,19 +79,18 @@ class WorkflowRuns(
 
     // 3. if external ref id is present we check jobs of the runs
     val candidate = if (null != externalRefId) {
-      // before we check we update the 'jobs' entry
       runs.filter {
         // if we have an external ref id we only can consider runs that have jobs
         it.status != RunStatus.QUEUED &&
         it.status != RunStatus.REQUESTED &&
         it.status != RunStatus.WAITING
       }.firstOrNull { run ->
-        // normally here job should never be null (ensured by updateRunDetails)
-        run.jobs!!.let {
-          // before we check we update the jobs entry
+        // normally here the job should never be null (ensured by updateRunDetails)
+        run.jobs?.let {
+          // before we check, we update the jobs entry
           it.fetchJobs(client)
           it.hasJobWithName(externalRefId)
-        }
+        } ?: false // but in case, it is equal to `false` (has no job with name)
       }
     } else { // Otherwise, we take the first closest to dispatch date
       runs.sortedWith(compareBy { it.dateCreated }).firstOrNull()
