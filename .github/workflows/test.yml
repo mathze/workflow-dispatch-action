@@ -2,6 +2,9 @@ name: Test
 on:
   workflow_dispatch
 
+env:
+  ANNO_TITLE: "Greet"
+
 jobs: 
   runAction:
     runs-on: ubuntu-latest
@@ -9,12 +12,17 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v2
 
+      - name: "Extract branch name"
+        id: get_ref
+        run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+
       - name: "Run action with no payload"
         id: dispatchNoPayload
         uses: ./
         with:
           workflow-name: dummy.yml
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          ref: ${{ steps.get_ref.outputs.branch }}
 
       - name: "Run action with payload"
         id: dispatchPayload
@@ -26,8 +34,86 @@ jobs:
               "to-greet": "${{ github.actor }}"
             }
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          ref: ${{ steps.get_ref.outputs.branch }}
 
-      - name: "Print run-ids"
+    outputs:
+      noPayload_run_id: ${{ steps.dispatchNoPayload.outputs.run-id }}
+      withPayload_run_id: ${{ steps.dispatchPayload.outputs.run-id }}
+
+  checkNoPayload:
+  ## receiving and checking the annotation for noPayload test
+    runs-on: ubuntu-latest
+    needs:
+      - runAction
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ needs.runAction.outputs.noPayload_run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: extract_job_id
         run: |
-          echo "No Payload:   ${{ steps.dispatchNoPayload.outputs.run_id }}"
-          echo "With Payload: ${{ steps.dispatchPayload.outputs.run_id }}"
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "::set-output name=job_id::$job_id"
+      - uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+      - id: extract_annotations_data
+        run: |
+          echo "::set-output name=title::${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}"
+          echo "::set-output name=message::${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}"
+      - name: "Assert noPayload result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello World" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello World> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi
+
+  checkWithPayload:
+    ## receiving and checking the annotation for withPayload test
+    runs-on: ubuntu-latest
+    needs:
+      - runAction
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ needs.runAction.outputs.withPayload_run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: extract_job_id
+        run: |
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "::set-output name=job_id::$job_id"
+      - uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+      - id: extract_annotations_data
+        run: |
+          echo "::set-output name=title::${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}"
+          echo "::set-output name=message::${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}"
+      - name: "Assert withPayload result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello ${{ github.actor }}" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello ${{ github.actor }}> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi
