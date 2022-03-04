@@ -159,13 +159,12 @@ class WorkflowRuns(
     runs.addAll(newRuns)
   }
 
-  suspend fun waitWorkflowRunCompleted(workflowRunId: String, maxTimeout: Duration, frequency: Duration): WorkflowRun {
+  suspend fun waitWorkflowRunCompleted(workflowRunId: String, maxTimeout: Duration, frequency: Duration): Pair<Boolean, WorkflowRun> {
     val runDetails = WorkflowRun(id = workflowRunId)
-    val result = executePolling(maxTimeout, frequency) {
+    return executePolling(maxTimeout, frequency) {
       updateRunDetails(runDetails)
       Pair(runDetails.status == RunStatus.COMPLETED, runDetails)
     }
-    return result.second
   }
 
   private suspend fun updateRunDetails(run: WorkflowRun) {
