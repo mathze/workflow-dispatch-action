@@ -1,4 +1,4 @@
-name: Dummy with external id and timeout
+name: Dummy with external id and failure
 on:
   workflow_dispatch:
     inputs:

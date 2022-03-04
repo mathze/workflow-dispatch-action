@@ -1,4 +1,4 @@
-name: Test with external id
+name: Test with external id and wait timeout
 on:
   workflow_dispatch
 
