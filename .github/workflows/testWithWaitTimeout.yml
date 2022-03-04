@@ -16,6 +16,7 @@ jobs:
           workflow-name: extId_dummy_with_timeout.yml
           use-marker-step: true
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          ref: ${{ github.ref }}
 
       - name: "Wait to complete"
         id: wait

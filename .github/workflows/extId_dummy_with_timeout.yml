@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ${{ github.event.inputs.external_ref_id }}
-    
+        run: echo "a run cmd must be present to avoid syntax error ;)"
+
       - name: "Wait a minute"
         run: sleep 1m
         shell: bash
