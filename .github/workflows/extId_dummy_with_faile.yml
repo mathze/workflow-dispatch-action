@@ -8,13 +8,13 @@ on:
         type: string
         default: ""
 
-jobs: 
+jobs:
   beforeAll:
     runs-on: ubuntu-latest
     steps:
       - name: ${{ github.event.inputs.external_ref_id }}
         run: echo "a run cmd must be present to avoid syntax error ;)"
 
-      - name: "Wait 30 seconds"
-        run: sleep 30s
+      - name: "Fail workflow"
+        run: exit 1
         shell: bash

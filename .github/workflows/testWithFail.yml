@@ -17,7 +17,7 @@ jobs:
         id: dispatch
         uses: ./
         with:
-          workflow-name: extId_dummy_with_timeout.yml
+          workflow-name: extId_dummy_with_fail.yml
           use-marker-step: true
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
           ref: ${{ steps.get_ref.outputs.branch }}
@@ -28,16 +28,15 @@ jobs:
         with:
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
           run-id: ${{ steps.dispatch.outputs.run-id }}
-          wait-timeout: 10s
 
       - name: Check result
         run: |
-          if [[ "in_progress" != "${{ steps.wait.outputs.run-status }}" ]] ||
-            [[ "" != "${{ steps.wait.outputs.run-conclusion }}" ]] ||
-            [[ true -ne ${{ steps.wait.outputs.failed }} ]]; then
-            echo "Run-Status should be <in_progress> but was <${{ steps.wait.outputs.run-status }}>"
-            echo "Run-Conclusion should be <empty> but was <${{ steps.wait.outputs.run-conclusion }}>"
-            echo "Failed should be <true> but was <${{ steps.wait.outputs.failed }}>"
+          if [[ "completed" != "${{ steps.wait.outputs.run-status }}" ]] ||
+            [[ "failure" != "${{ steps.wait.outputs.run-conclusion }}" ]] ||
+            [[ false -ne ${{ steps.wait.outputs.failed }} ]]; then
+            echo "Run-Status should be <completed> but was <${{ steps.wait.outputs.run-status }}>"
+            echo "Run-Conclusion should be <failure> but was <${{ steps.wait.outputs.run-conclusion }}>"
+            echo "Failed should be <false> but was <${{ steps.wait.outputs.failed }}>"
             exit 1
           else
             echo "Checks passed"
