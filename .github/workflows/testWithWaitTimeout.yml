@@ -1,0 +1,33 @@
+name: Test with external id
+on:
+  workflow_dispatch
+
+jobs:
+  runJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Run separate dispatch"
+        id: dispatch
+        uses: ./
+        with:
+          workflow-name: extId_dummy_with_timeout.yml
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+
+      - name: "Wait to complete"
+        id: wait
+        uses: ./
+        with:
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          run-id: ${{ steps.dispatch.outputs.run-id }}
+          wait-timeout: 15s
+
+      - name: Print result
+        run: |
+          echo "Run-Status should be running:  ${{ steps.wait.outputs.run-status }}"
+          echo "Run-Conclusion should be <null>: ${{ steps.wait.outputs.run-conclusion }}"
+          echo "Failed should be true: ${{ steps.wait.outputs.failed }}"

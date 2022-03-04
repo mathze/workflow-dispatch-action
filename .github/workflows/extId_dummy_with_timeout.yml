@@ -1,0 +1,19 @@
+name: Dummy with external id and timeout
+on:
+  workflow_dispatch:
+    inputs:
+      external_ref_id:
+        description: Id to use for unique run detection
+        required: false
+        type: string
+        default: ""
+
+jobs: 
+  beforeAll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ${{ github.event.inputs.external_ref_id }}
+    
+      - name: "Wait a minute"
+        run: sleep 1m
+        shell: bash
