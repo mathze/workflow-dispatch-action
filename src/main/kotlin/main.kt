@@ -78,7 +78,13 @@ suspend fun main(): Unit = runAction(
   inputs.runId?.let { runId ->
     logger.info("Going to wait until run $runId completes")
     val wfRun = WorkflowRuns(client)
-    wfRun.waitWorkflowRunCompleted(runId, inputs.waitTimeout, inputs.waitInterval)
+    val result = wfRun.waitWorkflowRunCompleted(runId, inputs.waitTimeout, inputs.waitInterval)
+    val run = result.second
+    outputs["run-status"] = run.status.value
+    outputs["run-conclusion"] = run.conclusion?.value ?: ""
+    if (!result.first) {
+      throw IllegalStateException("Triggered workflow does not complete within ${inputs.waitTimeout}!")
+    }
   }
 }
 

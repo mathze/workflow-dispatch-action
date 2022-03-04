@@ -10,20 +10,18 @@ data class WorkflowRun(
   var dateCreated: String? = null
 )
 
-enum class RunStatus(private val value: String) {
+enum class RunStatus(val value: String) {
   QUEUED("queued"),
   IN_PROGRESS("in_progress"),
   COMPLETED("completed"),
   REQUESTED("requested"),
   WAITING("waiting");
 
-  fun match(restState: String): Boolean = value == restState
-
   companion object {
-    fun from(value: String?) = value?.let {
+    fun from(value: String?) = value?.let { v ->
       values().firstOrNull {
-        it.match(value)
-      } ?: throw IllegalArgumentException("Cannot map unknown value '$value' to RunStatus!")
+        it.value == v
+      } ?: throw IllegalArgumentException("Cannot map unknown value '$v' to RunStatus!")
     }
   }
 }
@@ -39,10 +37,10 @@ enum class RunConclusion(val value: String) {
   TIMED_OUT("timed_out");
 
   companion object {
-    fun from(value: String?) = value?.let {
+    fun from(value: String?) = value?.let { v ->
       values().firstOrNull {
-        it.value == value
-      } ?: throw IllegalArgumentException("Cannot map unknown value '$value' to RunConclusion!")
+        it.value == v
+      } ?: throw IllegalArgumentException("Cannot map unknown value '$v' to RunConclusion!")
     }
   }
 }

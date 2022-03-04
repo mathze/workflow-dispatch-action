@@ -80,10 +80,11 @@ class WorkflowRuns(
     // 3. if external ref id is present we check jobs of the runs
     val candidate = if (null != externalRefId) {
       runs.filter {
-        // if we have an external ref id we only can consider runs that have jobs
-        it.status != RunStatus.QUEUED &&
-        it.status != RunStatus.REQUESTED &&
-        it.status != RunStatus.WAITING
+        // if we have an external ref id we only can consider runs that have jobs (in_progress or completed)
+        when(it.status) {
+          RunStatus.IN_PROGRESS, RunStatus.COMPLETED -> true
+          RunStatus.QUEUED, RunStatus.REQUESTED, RunStatus.WAITING -> false
+        }
       }.firstOrNull { run ->
         // normally here the job should never be null (ensured by updateRunDetails)
         run.jobs?.let {
@@ -158,13 +159,12 @@ class WorkflowRuns(
     runs.addAll(newRuns)
   }
 
-  suspend fun waitWorkflowRunCompleted(workflowRunId: String, maxTimeout: Duration, frequency: Duration): WorkflowRun {
+  suspend fun waitWorkflowRunCompleted(workflowRunId: String, maxTimeout: Duration, frequency: Duration): Pair<Boolean, WorkflowRun> {
     val runDetails = WorkflowRun(id = workflowRunId)
-    val result = executePolling(maxTimeout, frequency) {
+    return executePolling(maxTimeout, frequency) {
       updateRunDetails(runDetails)
       Pair(runDetails.status == RunStatus.COMPLETED, runDetails)
     }
-    return result.second
   }
 
   private suspend fun updateRunDetails(run: WorkflowRun) {

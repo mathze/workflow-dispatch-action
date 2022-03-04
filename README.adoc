@@ -13,14 +13,14 @@ An action that creates a workflow dispatch event and returns the run-id of start
 In contrast to other existing dispatch-actions, this action provides a way to reliably identify the workflow run (see <<With marker step>>). +
 To provide most flexibility, the action supports three different modes.
 
-1. 'Trigger' mode: +
+1. [[mode_trigger]] 'Trigger' mode: +
 In this mode the action triggers the workflow and just tires to receive the workflow run id.
 This can be used if you want to get the run id and wait for it in another step/job later on.
 This mode will be enabled if the `workflow-name` input is present.
 
-2. 'Wait' mode: +
+2. [[mode_wait]] 'Wait' mode: +
 In this mode the action waits until a workflow run finishes.
-This can be used in combination with 1. mode or if you get the run id from somewhere else.
+This can be used in combination with <<mode_trigger,1. mode>> or if you get the run id from somewhere else.
 The mode will be enabled if `run-id` is given.
 In this case the run-id is expected to be valid otherwise it results in error.
 
@@ -204,6 +204,18 @@ They might get exposed in the target-workflow!
 |`run-id`
 |String
 |The run id of the started workflow.
+May be empty if no run was found or on error.
+
+|`run-status`
+|String
+|The status of the triggered workflow. (Normally always 'completed') +
+Only set through the <<mode_wait,wait mode>>.
+May be empty if no run was found or on error.
+
+|`run-conclusion`
+|String
+|The conclusion of the triggered workflow. +
+Only set through the <<mode_wait,wait mode>>.
 May be empty if no run was found or on error.
 
 |===
