@@ -4,6 +4,7 @@ on:
 
 env:
   ANNO_TITLE: "Greet"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs: 
   runAction:
@@ -52,8 +53,6 @@ jobs:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
           repo: ${{ github.repository }}
           run_id: ${{ needs.runAction.outputs.noPayload_run_id }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: extract_job_id
         run: |
           job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
@@ -91,8 +90,6 @@ jobs:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
           repo: ${{ github.repository }}
           run_id: ${{ needs.runAction.outputs.withPayload_run_id }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: extract_job_id
         run: |
           job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
