@@ -2,12 +2,20 @@ name: Test with external id
 on:
   workflow_dispatch
 
+env:
+  ANNO_TITLE: "Greet"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   runJob1:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
+
+      - name: "Extract branch name"
+        id: get_ref
+        run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
 
       - name: "Run first action"
         id: action1
@@ -20,6 +28,7 @@ jobs:
             {
               "to-greet": "first job, first action"
             }
+          ref: ${{ steps.get_ref.outputs.branch }}
 
       - name: "Run second action"
         id: action2
@@ -32,17 +41,21 @@ jobs:
             {
               "to-greet": "first job, second action"
             }
+          ref: ${{ steps.get_ref.outputs.branch }}
 
-      - name: Print results
-        run: |
-          echo "Job1, first action:  ${{ steps.action1.outputs.run-id }}"
-          echo "Job1, second action: ${{ steps.action2.outputs.run-id }}"
+    outputs:
+      action1_run_id: ${{ steps.action1.outputs.run-id }}
+      action2_run_id: ${{ steps.action2.outputs.run-id }}
 
   runJob2:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
+
+      - name: "Extract branch name"
+        id: get_ref
+        run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
 
       - name: "Run separate dispatch"
         id: action3
@@ -55,6 +68,7 @@ jobs:
             {
               "to-greet": "second job, first action"
             }
+          ref: ${{ steps.get_ref.outputs.branch }}
 
       - name: "Wait to complete"
         uses: ./
@@ -63,15 +77,18 @@ jobs:
           token: ${{ secrets.WF_TRIGGER_TOKEN }}
           run-id: ${{ steps.action3.outputs.run-id }}
 
-      - name: Print result
-        run: |
-          echo "Job2, third action:  ${{ steps.action3.outputs.run-id }}"
+    outputs: 
+      run_id: ${{ steps.action3.outputs.run-id }}
 
   runJob3:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: "Extract branch name"
+        id: get_ref
+        run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
 
       - name: Run and wait
         id: action4
@@ -85,7 +102,154 @@ jobs:
               "to-greet": "third job, first action"
             }
           run-id: dummy
+          ref: ${{ steps.get_ref.outputs.branch }}
+    outputs:
+      run_id: ${{ steps.action4.outputs.run-id }}
 
-      - name: Print result
+  checkJob1Action1:
+    ## receiving and checking the annotation for job1 action1 test
+    runs-on: ubuntu-latest
+    needs:
+      - runJob1
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ needs.runJob1.outputs.action1_run_id }}
+      - id: extract_job_id
         run: |
-          echo "Job3, fourth action:  ${{ steps.action4.outputs.run-id }}"
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "::set-output name=job_id::$job_id"
+      - uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+      - id: extract_annotations_data
+        run: |
+          echo "::set-output name=title::${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}"
+          echo "::set-output name=message::${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}"
+      - name: "Assert Job1 Action1 result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello first job, first action" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello first job, first action> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi
+
+  checkJob1Action2:
+    ## receiving and checking the annotation for job1 action2 test
+    runs-on: ubuntu-latest
+    needs:
+      - runJob1
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ needs.runJob1.outputs.action2_run_id }}
+      - id: extract_job_id
+        run: |
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "::set-output name=job_id::$job_id"
+      - uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+      - id: extract_annotations_data
+        run: |
+          echo "::set-output name=title::${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}"
+          echo "::set-output name=message::${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}"
+      - name: "Assert Job1 Action2 result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello first job, second action" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello first job, second action> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi
+
+  checkJob2:
+    ## receiving and checking the annotation for job2 test
+    runs-on: ubuntu-latest
+    needs:
+      - runJob2
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ needs.runJob2.outputs.run_id }}
+      - id: extract_job_id
+        run: |
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "::set-output name=job_id::$job_id"
+      - uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+      - id: extract_annotations_data
+        run: |
+          echo "::set-output name=title::${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}"
+          echo "::set-output name=message::${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}"
+      - name: "Assert Job2 result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello second job, first action" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello second job, first action> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi
+
+  checkJob3:
+    ## receiving and checking the annotation for job2 test
+    runs-on: ubuntu-latest
+    needs:
+      - runJob3
+    steps:
+      - uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ needs.runJob3.outputs.run_id }}
+      - id: extract_job_id
+        run: |
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "::set-output name=job_id::$job_id"
+      - uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+      - id: extract_annotations_data
+        run: |
+          echo "::set-output name=title::${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}"
+          echo "::set-output name=message::${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}"
+      - name: "Assert Job3 result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello third job, first action" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello third job, first action> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi

@@ -14,4 +14,4 @@ jobs:
     steps:
       - name: Greet
         run: |
-          echo "Hello ${{ github.event.inputs.to-greet }}"
+          echo "::notice title=Greet::Hello ${{ github.event.inputs.to-greet }}"
