@@ -1,0 +1,44 @@
+name: Test with external id and wait timeout
+on:
+  workflow_dispatch
+
+jobs:
+  runJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Extract branch name"
+        id: get_ref
+        run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+
+      - name: "Trigger workflow"
+        id: dispatch
+        uses: ./
+        with:
+          workflow-name: extId_dummy_with_timeout.yml
+          use-marker-step: true
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          ref: ${{ steps.get_ref.outputs.branch }}
+
+      - name: "Wait to complete"
+        id: wait
+        uses: ./
+        with:
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          run-id: ${{ steps.dispatch.outputs.run-id }}
+          wait-timeout: 10s
+
+      - name: Check result
+        run: |
+          if [[ "in_progress" != "${{ steps.wait.outputs.run-status }}" ]] ||
+            [[ "" != "${{ steps.wait.outputs.run-conclusion }}" ]] ||
+            [[ true -ne ${{ steps.wait.outputs.failed }} ]]; then
+            echo "Run-Status should be <in_progress> but was <${{ steps.wait.outputs.run-status }}>"
+            echo "Run-Conclusion should be <empty> but was <${{ steps.wait.outputs.run-conclusion }}>"
+            echo "Failed should be <true> but was <${{ steps.wait.outputs.failed }}>"
+            exit 1
+          else
+            echo "Checks passed"
+          fi

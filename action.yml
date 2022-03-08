@@ -94,6 +94,14 @@ outputs:
       been triggered correctly. [true, false]
   run-id:
     description: The id of the started workflow run. May be empty if error or timeout occured
+  run-status:
+    description: >
+      The status of the triggered workflow. (Normally always 'completed')
+      Only set through the wait mode. May be empty if no run was found or on error.
+  run-conclusion:
+    description: >
+      The conclusion of the triggered workflow.
+      Only set through the wait mode. May be empty if no run was found or on error.
 
 runs:
   using: node12

@@ -5,22 +5,24 @@ ifdef::env-github[]
 :important-caption: :bangbang:
 endif::[]
 :toc: preamble
-:current_version: v1
+:current_version: v1.1.0
 
 An action that creates a workflow dispatch event and returns the run-id of started workflow.
+This action can also be used to wait on completion of the triggered workflow.
 
 == About
 In contrast to other existing dispatch-actions, this action provides a way to reliably identify the workflow run (see <<With marker step>>). +
-To provide most flexibility, the action supports three different modes.
+To provide most flexibility, the action supports three different modes. +
+Thereby the mode is controlled by the two input parameters `workflow-name` and `run-id`.
 
-1. 'Trigger' mode: +
-In this mode the action triggers the workflow and just tires to receive the workflow run id.
+1. [[mode_trigger]] 'Trigger' mode: +
+In this mode the action triggers the workflow and just tries to receive the workflow run id.
 This can be used if you want to get the run id and wait for it in another step/job later on.
 This mode will be enabled if the `workflow-name` input is present.
 
-2. 'Wait' mode: +
+2. [[mode_wait]] 'Wait' mode: +
 In this mode the action waits until a workflow run finishes.
-This can be used in combination with 1. mode or if you get the run id from somewhere else.
+This can be used in combination with <<mode_trigger,1. mode>> or if you get the run id from somewhere else.
 The mode will be enabled if `run-id` is given.
 In this case the run-id is expected to be valid otherwise it results in error.
 
@@ -65,10 +67,12 @@ This mode is handy if you know that there will be only on workflow run at a time
       token: ${{ secrets.MY_PAT }}
       run-id: ${{ steps.startWorkflow.outputs.run-id }}
 ----
+[TIP]
+You also can create a 'fire & forget' workflow by simply omitting the 'wait-to-complete' step.
 
 === With marker step
 
-[source,yaml,title="Caller workflow", subs="attributes"]
+[source,yaml,title="Caller workflow ('Trigger and independent wait' case)",subs="attributes"]
 ----
 #...
   - name: "Start workflow"
@@ -86,7 +90,7 @@ This mode is handy if you know that there will be only on workflow run at a time
       run-id: ${{ steps.startWorkflow.outputs.run-id }}
 ----
 
-[source, yaml, title="workflow-with-marker.yml"]
+[source,yaml,title="workflow-with-marker.yml"]
 ----
 on:
   workflow-dispatch:
@@ -104,7 +108,7 @@ jobs:
         run: echo
 ----
 <1> The target workflow has to define the `external_ref_id` input
-<2> Here we define a step with the name of the paste input.
+<2> Here we define a step with the name of the passed input.
 
 == Inputs
 [cols="~a,30%a,20%a,30%a",options="header"]
@@ -134,7 +138,7 @@ you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions
 |`workflow-name`
 |Name of the workflow to trigger. E.g. 'my-workflow.yml'. +
 (Enables trigger-mode)
-|`conditional`<<mode, ^(M)^>>
+|`conditional`<<mode_trigger, ^(M)^>>
 |-
 
 |`ref`
@@ -152,7 +156,7 @@ They might get exposed in the target-workflow!
 | {}
 
 |`trigger-timeout`
-|Maximum duration<<duration, ^(D)^>> to use to getting workflow run id.
+|Maximum duration<<duration, ^(D)^>> of workflow run id retrieval.
 |*O*
 |1 minute
 
@@ -167,12 +171,13 @@ They might get exposed in the target-workflow!
 |`false`
 
 |`run-id`
-|A workflow run id for which to wait. (Enables wait-mode)
-|`conditional`<<mode, ^(M)^>>
+|A workflow run id for which to wait. +
+(Enables wait-mode)
+|`conditional`<<mode_wait, ^(M)^>>
 |-
 
 |`wait-timeout`
-|Maximum duration<<duration, ^(D)^>> to use to wait until a workflow run completes.
+|Maximum duration<<duration, ^(D)^>> to wait until a workflow run completes.
 |*O*
 |10 minutes
 
@@ -182,13 +187,13 @@ They might get exposed in the target-workflow!
 |1 second
 
 |`fail-on-error`
-|Defines if the action should result in a build failure, if an error was discovered
+|Defines if the action should result in a workflow failure if an error was discovered. +
+[NOTE]
+Errors in the `inputs` of this action are not covered by the flag and always let the action and the workflow fail.
 |*O*
 |`false`
 
 |===
-[#mode]
-(M): Controls the mode of the action.
 [#duration]
 (D): Duration can be specified in either ISO-8601 Duration format or in specific format e.g. `1m 10s` (details see https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.time/-duration/parse.html)
 
@@ -199,12 +204,24 @@ They might get exposed in the target-workflow!
 
 |`failed`
 |Boolean
-|Indicates if there was an issue with the action run, and the workflow may not have been triggered correctly.
+|Indicates if there was an issue within the action run, and the workflow may not have been triggered correctly or didn't reach the completed status. To drill down the cause you can check the `run-id` and `run-status` outputs.
 
 |`run-id`
 |String
 |The run id of the started workflow.
-May be empty if no run was found or on error.
+May be empty if no run was found or in case of an error.
+
+|`run-status`
+|String
+|The status of the triggered workflow. (Normally always 'completed') +
+Only set through the <<mode_wait,wait mode>>.
+May be empty if no run was found or in case of an error.
+
+|`run-conclusion`
+|String
+|The conclusion of the triggered workflow. +
+Only set through the <<mode_wait,wait mode>>.
+May be empty if no run was found or in case of an error.
 
 |===
 

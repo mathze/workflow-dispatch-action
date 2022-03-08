@@ -1,0 +1,20 @@
+name: Dummy with external id and failure
+on:
+  workflow_dispatch:
+    inputs:
+      external_ref_id:
+        description: Id to use for unique run detection
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  beforeAll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ${{ github.event.inputs.external_ref_id }}
+        run: echo "a run cmd must be present to avoid syntax error ;)"
+
+      - name: "Fail workflow"
+        run: exit 1
+        shell: bash
