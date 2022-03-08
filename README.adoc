@@ -5,7 +5,7 @@ ifdef::env-github[]
 :important-caption: :bangbang:
 endif::[]
 :toc: preamble
-:current_version: v1.0.1
+:current_version: v1.1.0
 
 An action that creates a workflow dispatch event and returns the run-id of started workflow.
 This action can also be used to wait on completion of the triggered workflow.
