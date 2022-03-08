@@ -1,42 +1,30 @@
 package utils
 
+import com.rnett.action.core.fail
 import com.rnett.action.core.logger.error
-import com.rnett.action.core.logger.fatal
 import com.rnett.action.core.outputs
+import com.rnett.action.currentProcess
 import timers.setTimeout
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-@OptIn(ExperimentalContracts::class)
-inline fun <T> runAction(
-  before: () -> T,
-  catch: (input: T, ex: Throwable) -> Unit,
-  block: (input: T) -> Unit
-) {
-  contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-  val a = before()
-  try {
-    block(a)
-    outputs["failed"] = "false"
-  } catch (e: Throwable) {
-    outputs["failed"] = "true"
-    catch(a, e)
-  }
-}
-
-fun failOrError(
-  message: String,
-  failOnError: Boolean
-) {
-  // if we report any failure, consider the action to have failed, may not make the build fail
+/**
+ * Controls how an error in the action is carried out to the workflow.
+ * 
+ * Always sets the outputs 'failed' variable to "true"!
+ *
+ * @param[message] The message to display in the log.
+ * @param[failOnError] If `true` action terminates with exit code `1` which will also marks the workflow run as failed.
+ *  If `false` action terminates with exit code `0` which marks the step "passed" and workflow continues normally.
+ */
+fun failOrError(message: String, failOnError: Boolean) {
+  // if we report any failure, we consider the action as failed, but maybe don't want the workflow to fail
   outputs["failed"] = "true"
   if (failOnError) {
-    fatal(message)
+    fail(message)
   } else {
     error(message)
+    currentProcess.exit(0)
   }
 }
 
