@@ -298,8 +298,9 @@ They might get exposed in the target-workflow!
 |`fail-on-error`
 |Defines if the action should result in a workflow failure if an error was discovered. +
 [NOTE]
-Errors in the `inputs` of this action are not covered by the flag and always +
-let the action and the workflow fail.
+Errors in the `inputs` of this action are not +
+covered by the flag and always let the action +
+and the workflow fail.
 |*O*
 |`false`
 
