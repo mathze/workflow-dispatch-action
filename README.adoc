@@ -3,6 +3,7 @@ ifdef::env-github[]
 :note-caption: :information_source:
 :warning-caption: :warning:
 :important-caption: :bangbang:
+:tip-caption: :bulb:
 endif::[]
 :toc: preamble
 :current_version: v1.1.0
@@ -11,6 +12,7 @@ An action that creates a workflow dispatch event and returns the run-id of start
 This action can also be used to wait on completion of the triggered workflow.
 
 == About
+
 In contrast to other existing dispatch-actions, this action provides a way to reliably identify the workflow run (see <<With marker step>>). +
 To provide most flexibility, the action supports three different modes. +
 Thereby the mode is controlled by the two input parameters `workflow-name` and `run-id`.
@@ -32,11 +34,15 @@ To enable it, specify the `workflow-name` and `run-id` inputs.
 In this case, the `run-id` isn't required to be valid because it gets replaced by the one detected in the trigger step.
 
 == Usage
+
+In addition to the examples shown here, you can also take a look at the link:.github/workflows/[] folder. There we have a few workflows for test purposes that might inspire you.
+
 === Simple (flaky) usage
+
 The following examples show the minimum setup without using a marker step.
 This mode is handy if you know that there will be only on workflow run at a time.
 
-[source,yaml,title="With direct wait", subs="attributes"]
+[source,yaml,title="With direct wait", subs="+attributes"]
 ----
 #...
   - name: "Start and wait for a workflow"
@@ -51,7 +57,7 @@ This mode is handy if you know that there will be only on workflow run at a time
     run: "echo ${{ steps.startAndWaitWorkflow.outputs.run-id }}
 ----
 
-[source,yaml,title="Trigger and independent wait", subs="attributes"]
+[source,yaml,title="Trigger and independent wait", subs="+attributes"]
 ----
 #...
   - name: "Start a workflow"
@@ -72,7 +78,7 @@ You also can create a 'fire & forget' workflow by simply omitting the 'wait-to-c
 
 === With marker step
 
-[source,yaml,title="Caller workflow ('Trigger and independent wait' case)",subs="attributes"]
+[source,yaml,title="Caller workflow ('Trigger and independent wait' case)",subs="+attributes"]
 ----
 #...
   - name: "Start workflow"
@@ -110,7 +116,110 @@ jobs:
 <1> The target workflow has to define the `external_ref_id` input
 <2> Here we define a step with the name of the passed input.
 
+=== With additional payload
+
+In this section we show how to configure the `payload` input of this action in two scenarios, with and without marker-step.
+
+WARNING: Be careful when using secrets within payload!
+They might get exposed in the target-workflow!
+
+==== No marker step
+
+First, lets assume we have the following (simple) workflow we want to trigger through our action
+
+[source,yaml,title="say-hello.yml"]
+----
+on:
+  workflow_dispatch:
+    inputs:
+      whom-to-greet:
+        required: false
+        description: Whom to greet
+        default: "World"
+        type: string
+
+jobs:
+  greetJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet
+        run: |
+          echo "::notice title=Greet::Hello ${{ github.event.inputs.whom-to-greet }}"
+----
+
+Now, the step in our calling workflow could look like this
+
+[source,yaml,subs="+verbatim,+attributes"]
+----
+#...
+  - name: "Start say hello"
+    id: startSayHello
+    uses: mathze/workflow-dispatch-action@{current_version}
+    with:
+      workflow-name: say-hello.yml
+      token: ${{ secrets.MY_PAT }}
+      payload: | #<.>
+        {
+          "whom-to-greet": "${{ github.actor }}" #<.>
+        }
+#...
+----
+<.> We use multiline string (indicated by '|'). This allows us to write the json in a more natural way.
+<.> We only need the 'inputs' argument names -- in this case "whom-to-greet" -- and the value that shall be submitted. We also can use github expressions (even for/within the argument's name).
+
+==== With marker step
+
+[source,yaml,title="say-hello-with-marker.yml"]
+----
+on:
+  workflow-dispatch:
+    inputs:
+      external_ref_id:
+        description: Id to use for unique run detection
+        required: false
+        type: string
+        default: ""
+      whom-to-greet:
+        required: false
+        description: Whom to greet
+        default: "World"
+        type: string
+jobs:
+  greetJob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ${{ github.event.inputs.external_ref_id }}
+        run: echo
+
+      - name: Greet
+        run: |
+          echo "::notice title=Greet::Hello ${{ github.event.inputs.whom-to-greet }}"
+----
+
+The respective step in our calling workflow could look like this
+
+[source,yaml,subs="+verbatim,+attributes"]
+----
+#...
+  - name: "Start say hello"
+    id: startSayHello
+    uses: mathze/workflow-dispatch-action@{current_version}
+    with:
+      workflow-name: say-hello-with-marker.yml
+      token: ${{ secrets.MY_PAT }}
+      use-marker-step: true
+      payload: | #<.>
+        {
+          "whom-to-greet": "${{ github.actor }}" #<.><.>
+        }
+#...
+----
+<.> We use multiline string (indicated by '|'). This allows us to write the json in a more natural way.
+<.> We only need the 'inputs' argument names -- in this case "whom-to-greet" -- and the value that shall be submitted. We also can use github expressions (even for/within the argument's name).
+<.> Note that you do not need to specify the `external_ref_id` input, as it will be added automatically when `use-marker-step` is enabled.
+
 == Inputs
+
 [cols="~a,30%a,20%a,30%a",options="header"]
 |===
 |Input|Description|``R``equired/ +
@@ -189,7 +298,9 @@ They might get exposed in the target-workflow!
 |`fail-on-error`
 |Defines if the action should result in a workflow failure if an error was discovered. +
 [NOTE]
-Errors in the `inputs` of this action are not covered by the flag and always let the action and the workflow fail.
+Errors in the `inputs` of this action are not +
+covered by the flag and always let the action +
+and the workflow fail.
 |*O*
 |`false`
 
@@ -226,6 +337,7 @@ May be empty if no run was found or in case of an error.
 |===
 
 == How it works
+
 Trigger-mode::
 1. Determine workflow id for given workflow-name
 2. If `use-marker-step` is enabled, generate a unique `external_ref_id` (<CURRENT_RUN_ID>-<CURRENT_JOB_ID>-<UUID>)
