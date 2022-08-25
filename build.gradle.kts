@@ -23,6 +23,6 @@ dependencies {
     implementation(group = "com.github.rnett.ktjs-github-action", name = it, version = "1.4.3")
   }
 
-  implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.0.12")
+  implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.0.16")
   implementation(group = "io.ktor", name = "ktor-client-js", version = "1.6.6")
 }
