@@ -20,7 +20,7 @@ kotlin {
 
 plugins.withType<NodeJsRootPlugin> {
   configure<NodeJsRootExtension> {
-    nodeVersion = "14.15.0"
+    nodeVersion = "16.18.0"
   }
 }
 
