@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
 plugins {
   kotlin("js")
-  id("com.github.rnett.ktjs-github-action") version "1.5.0"
+  id("com.github.rnett.ktjs-github-action") version "1.6.0"
 }
 
 repositories {
