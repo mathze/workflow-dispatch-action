@@ -49,7 +49,7 @@ class Workflows(private val client: GhRestClient) {
    * Fires the workflow dispatch event for a workflow.
    *
    * @param workflowId The `id` of the workflow.
-   * @param ref The name of the `branch' the workflow shall run on.
+   * @param ref The name of the `branch` the workflow shall run on.
    * @param inputs Additional data that will be sent as `inputs` to the workflow.
    *
    * @return The datetime string (ISO) of creation time (or current date if not received by the endpoint)
