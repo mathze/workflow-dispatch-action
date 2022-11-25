@@ -4,13 +4,14 @@ import com.rnett.action.core.fail
 import com.rnett.action.core.logger.error
 import com.rnett.action.core.outputs
 import com.rnett.action.currentProcess
-import timers.setTimeout
+import web.timers.setTimeout
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.time.Duration
 
 /**
  * Controls how an error in the action is carried out to the workflow.
- * 
+ *
  * Always sets the outputs 'failed' variable to "true"!
  *
  * @param[message] The message to display in the log.
@@ -28,8 +29,6 @@ fun failOrError(message: String, failOnError: Boolean) {
   }
 }
 
-suspend fun delay(ms: Long): Unit = suspendCoroutine { continuation ->
-  setTimeout({
-    continuation.resume(Unit)
-  }, ms)
+suspend fun delay(duration: Duration): Unit = suspendCoroutine { continuation ->
+  setTimeout(duration) { continuation.resume(Unit) }
 }
