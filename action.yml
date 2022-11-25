@@ -93,7 +93,7 @@ outputs:
       Indicates if there was an issue with the action run, and the workflow may not have
       been triggered correctly. [true, false]
   run-id:
-    description: The id of the started workflow run. May be empty if error or timeout occured
+    description: The id of the started workflow run. May be empty if error or timeout occurred
   run-status:
     description: >
       The status of the triggered workflow. (Normally always 'completed')
