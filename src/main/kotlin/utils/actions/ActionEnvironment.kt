@@ -1,7 +1,7 @@
 package utils.actions
 
-import NodeJS.get
-import process
+import kotlinx.js.get
+import node.process.process
 import kotlin.reflect.KProperty
 
 /**
