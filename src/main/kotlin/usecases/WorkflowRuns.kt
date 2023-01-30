@@ -296,7 +296,7 @@ class WorkflowRuns(
       result = block().also {
         if (!it.first) {
           logger.info("No result, retry in $frequency")
-          delay(frequency.inWholeMilliseconds)
+          delay(frequency)
         }
       }
       delta = getTimeMillis().deltaMs(start)

@@ -16,21 +16,21 @@ on:
         required: false
 
 jobs:
-  clean-workwlow-runs:
+  clean-workflow-runs:
     runs-on: ubuntu-latest
     steps:
       - name: setup
         id: setup
         run: |
-          if [[ -z "${{ github.event.inputs.retain_days }}" ]]; then
-            echo "::set-output name=retain_days::1"
+          if [[ ! -z "${{ github.event.inputs.retain_days }}" ]]; then
+            echo "retain_days=${{ github.event.inputs.retain_days }}" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=retain_days::${{ github.event.inputs.retain_days }}"
+            echo "retain_days=1" >> $GITHUB_OUTPUT
           fi
-          if [[ -z "${{ github.event.inputs.min_num_runs }}" ]]; then
-            echo "::set-output name=min_runs::1"
+          if [[ ! -z "${{ github.event.inputs.min_num_runs }}" ]]; then
+            echo "min_runs=${{ github.event.inputs.min_num_runs }}" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=min_runs::${{ github.event.inputs.min_num_runs }}"
+            echo "min_runs=1" >> $GITHUB_OUTPUT
           fi
 
       - name: clean runs
