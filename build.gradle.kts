@@ -29,5 +29,5 @@ dependencies {
   }
 
   implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.0.17")
-  implementation(group = "io.ktor", name = "ktor-client-js", version = "2.2.2")
+  implementation(group = "io.ktor", name = "ktor-client-js", version = "2.2.3")
 }
