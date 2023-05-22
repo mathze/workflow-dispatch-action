@@ -220,7 +220,7 @@ The respective step in our calling workflow could look like this
 
 == Inputs
 
-[cols="~a,30%a,20%a,30%a",options="header"]
+[cols="20%a,30%a,20%a,30%a",options="header"]
 |===
 |Input|Description|``R``equired/ +
 ``O``ptional|Default
@@ -253,6 +253,10 @@ you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions
 |`ref`
 |The git reference for the workflow.
 The reference can be a branch or tag name.
+[NOTE]
+If you want to use `GITHUB_REF`, make sure you +
+shorten it to the name only through +
+`${{ GITHUB_REF#refs/heads/ }}`
 |*O*
 |Default branch of the target repository.
 
