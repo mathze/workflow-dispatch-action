@@ -1,12 +1,12 @@
 pluginManagement {
-  val kotlinVersion = "1.8.22"
+  val kotlinVersion = "1.9.0"
   repositories {
     gradlePluginPortal()
   }
 
   plugins {
     // realization
-    kotlin("js") version kotlinVersion
+    kotlin("multiplatform") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
   }
   resolutionStrategy {
