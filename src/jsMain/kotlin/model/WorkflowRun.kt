@@ -12,6 +12,7 @@ data class WorkflowRun(
 
 enum class RunStatus(val value: String) {
   QUEUED("queued"),
+  PENDING("pending"),
   IN_PROGRESS("in_progress"),
   COMPLETED("completed"),
   REQUESTED("requested"),
