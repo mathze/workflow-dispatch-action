@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4
 
       - name: "Extract branch name"
         id: get_ref
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4
 
       - name: "Extract branch name"
         id: get_ref
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4
 
       - name: "Extract branch name"
         id: get_ref
@@ -112,26 +112,34 @@ jobs:
     needs:
       - runJob1
     steps:
-      - uses: octokit/request-action@v2.x
+      - name: "J1_A1: get jobs"
+        uses: octokit/request-action@v2.x
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
           repo: ${{ github.repository }}
           run_id: ${{ needs.runJob1.outputs.action1_run_id }}
-      - id: extract_job_id
+
+      - name: "J1_A1: extract job id"
+        id: extract_job_id
         run: |
           job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
-      - uses: octokit/request-action@v2.x
+
+      - name: "J1_A1: get checkrun"
+        uses: octokit/request-action@v2.x
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
           repo: ${{ github.repository }}
           check_id: ${{ steps.extract_job_id.outputs.job_id }}
-      - id: extract_annotations_data
+
+      - name: "J1_A1: extract annotation data"
+        id: extract_annotations_data
         run: |
           echo "title=${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}" >> "$GITHUB_OUTPUT"
           echo "message=${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}" >> "$GITHUB_OUTPUT"
+
       - name: "Assert Job1 Action1 result"
         run: |
           if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
@@ -149,26 +157,34 @@ jobs:
     needs:
       - runJob1
     steps:
-      - uses: octokit/request-action@v2.x
+      - name: "J1_A2: get jobs"
+        uses: octokit/request-action@v2.x
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
           repo: ${{ github.repository }}
           run_id: ${{ needs.runJob1.outputs.action2_run_id }}
-      - id: extract_job_id
+
+      - name: "J1_A2: extract job ids"
+        id: extract_job_id
         run: |
           job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
-      - uses: octokit/request-action@v2.x
+
+      - name: "J1_A2: get checkruns"
+        uses: octokit/request-action@v2.x
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
           repo: ${{ github.repository }}
           check_id: ${{ steps.extract_job_id.outputs.job_id }}
-      - id: extract_annotations_data
+
+      - name: "J1_A2: extract annotation data"
+        id: extract_annotations_data
         run: |
           echo "title=${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}" >> "$GITHUB_OUTPUT"
           echo "message=${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}" >> "$GITHUB_OUTPUT"
+
       - name: "Assert Job1 Action2 result"
         run: |
           if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
@@ -186,26 +202,34 @@ jobs:
     needs:
       - runJob2
     steps:
-      - uses: octokit/request-action@v2.x
+      - name: "J2: get jobs"
+        uses: octokit/request-action@v2.x
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
           repo: ${{ github.repository }}
           run_id: ${{ needs.runJob2.outputs.run_id }}
-      - id: extract_job_id
+
+      - name: "J2: extract job ids"
+        id: extract_job_id
         run: |
           job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
-      - uses: octokit/request-action@v2.x
+
+      - name: "J2: get checkruns"
+        uses: octokit/request-action@v2.x
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
           repo: ${{ github.repository }}
           check_id: ${{ steps.extract_job_id.outputs.job_id }}
-      - id: extract_annotations_data
+
+      - name: "J2: extract annotations data"
+        id: extract_annotations_data
         run: |
           echo "title=${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}" >> "$GITHUB_OUTPUT"
           echo "message=${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}" >> "$GITHUB_OUTPUT"
+
       - name: "Assert Job2 result"
         run: |
           if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
@@ -223,26 +247,34 @@ jobs:
     needs:
       - runJob3
     steps:
-      - uses: octokit/request-action@v2.x
+      - name: "J3: get jobs"
+        uses: octokit/request-action@v2.x
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
           repo: ${{ github.repository }}
           run_id: ${{ needs.runJob3.outputs.run_id }}
-      - id: extract_job_id
+
+      - name: "J3: extract job ids"
+        id: extract_job_id
         run: |
           job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
-      - uses: octokit/request-action@v2.x
+
+      - name: "J3: get checkrun"
+        uses: octokit/request-action@v2.x
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
           repo: ${{ github.repository }}
           check_id: ${{ steps.extract_job_id.outputs.job_id }}
-      - id: extract_annotations_data
+
+      - name: "J3: extract annotations data"
+        id: extract_annotations_data
         run: |
           echo "title=${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}" >> "$GITHUB_OUTPUT"
           echo "message=${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}" >> "$GITHUB_OUTPUT"
+
       - name: "Assert Job3 result"
         run: |
           if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
