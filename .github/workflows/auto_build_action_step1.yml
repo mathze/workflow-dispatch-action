@@ -25,7 +25,7 @@ jobs:
         run: ./gradlew build
 
       - name: Commit dist
-        uses: EndBug/add-and-commit@v9.1.3
+        uses: EndBug/add-and-commit@v9.1.4
         with:
           add: 'dist'
           message: 'Commit new/updated dist'
