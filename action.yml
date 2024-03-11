@@ -104,7 +104,7 @@ outputs:
       Only set through the wait mode. May be empty if no run was found or on error.
 
 runs:
-  using: node16
+  using: node20
   main: dist/index.js
 
 branding:
