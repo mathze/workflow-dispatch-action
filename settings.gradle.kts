@@ -1,5 +1,5 @@
 pluginManagement {
-  val kotlinVersion = "1.9.23"
+  val kotlinVersion = "1.9.24"
   repositories {
     gradlePluginPortal()
   }
