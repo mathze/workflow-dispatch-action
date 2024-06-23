@@ -38,7 +38,7 @@ kotlin {
     }
 
     rootProject.plugins.withType<NodeJsRootPlugin> {
-      rootProject.the<NodeJsRootExtension>().nodeVersion = "20.9.0"
+      rootProject.the<NodeJsRootExtension>().version = "20.9.0"
     }
   }
 
