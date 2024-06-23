@@ -49,7 +49,7 @@ kotlin {
           implementation(group = "com.github.rnett.ktjs-github-action", name = it, version = "1.6.0")
         }
         implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.0.25")
-        implementation(group = "io.ktor", name = "ktor-client-js", version = "2.3.9")
+        implementation(group = "io.ktor", name = "ktor-client-js", version = "2.3.12")
       }
     }
   }
