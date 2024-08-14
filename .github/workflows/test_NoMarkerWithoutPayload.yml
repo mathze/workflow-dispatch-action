@@ -1,0 +1,67 @@
+name: noMarkerNoPayload
+on:
+  workflow_dispatch
+
+env:
+  ANNO_TITLE: "Greet"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs: 
+  runAction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Extract branch name"
+        id: get_ref
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> "$GITHUB_OUTPUT"
+
+      - name: "Run action with no payload"
+        id: dispatchNoPayload
+        uses: ./
+        with:
+          workflow-name: dummy.yml
+          run-id: wait
+          token: ${{ secrets.WF_TRIGGER_TOKEN }}
+          ref: ${{ steps.get_ref.outputs.branch }}
+
+      ## receiving and checking the annotation for noPayload test
+      - name: "get jobs"
+        uses: octokit/request-action@v2.x
+        id: get_jobs
+        with:
+          route: GET /repos/{repo}/actions/runs/{run_id}/jobs
+          repo: ${{ github.repository }}
+          run_id: ${{ steps.dispatchNoPayload.outputs.run-id }}
+
+      - name: "Extract job ids"
+        id: extract_job_id
+        run: |
+          job_id=$(echo '${{steps.get_jobs.outputs.data}}' | jq '.jobs[] | select(.name == "greetJob") | .id')
+          echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
+
+      - name: "get checkrun"
+        uses: octokit/request-action@v2.x
+        id: get_checkrun
+        with:
+          route: GET /repos/{repo}/check-runs/{check_id}/annotations
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.extract_job_id.outputs.job_id }}
+
+      - name: "extract annotation data"
+        id: extract_annotations_data
+        run: |
+          echo "title=${{ fromJson(steps.get_checkrun.outputs.data)[0].title }}" >> "$GITHUB_OUTPUT"
+          echo "message=${{ fromJson(steps.get_checkrun.outputs.data)[0].message }}" >> "$GITHUB_OUTPUT"
+
+      - name: "Assert noPayload result"
+        run: |
+          if [[ "${{ env.ANNO_TITLE }}" != "${{ steps.extract_annotations_data.outputs.title }}" ]] ||
+            [[ "Hello World" != "${{ steps.extract_annotations_data.outputs.message }}" ]]; then
+            echo "Expected Title <${{ env.ANNO_TITLE }}> but got <${{ steps.extract_annotations_data.outputs.title }}>"
+            echo "Expected Message <Hello World> but got <${{ steps.extract_annotations_data.outputs.message }}>"
+            exit 1
+          else
+            echo "Check passed"
+          fi

@@ -240,7 +240,7 @@ The respective step in our calling workflow could look like this
 The token must have `repo` scope.
 [IMPORTANT]
 Because token is used to also trigger dispatch-event, +
-you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token[here]
+you can not use the GITHUB_TOKEN as explained https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow[here]
 |*R*
 |-
 

@@ -51,3 +51,29 @@ If you are reviewing other contributor's code please consider the following when
 * Be nice. Please make the review comment as constructive as possible so all participants will learn something from your review.
 
 As a contributor, you might be asked to rewrite portions of your code to make it fit better into the upstream sources.
+
+== How to test
+. Create a PAT with sufficient rights within the repo (refer to link:README.adoc#_inputs[README -> Inputs -> Token])
+. Install https://github.com/nektos/act[act] e.g. with scoop
++
+[source,powershell]
+----
+scoop install act
+----
+. Create a `.secrets` file under `src/jsTest/act`
++
+[source,powershell]
+----
+mkdir src/jsTest/act
+cd src/jsTest/act
+touch .secrets
+----
+
+. Add PAT to `.secrets` file
++
+[title=.secrets file]
+----
+GITHUB_TOKEN=<your PAT>
+WF_TRIGGER_TOKEN=<your PAT>
+----
+. Run `runTests.ps1`
