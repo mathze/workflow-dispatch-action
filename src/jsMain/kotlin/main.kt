@@ -1,3 +1,4 @@
+import app.softwork.uuid.nextUuid
 import com.rnett.action.core.logger
 import com.rnett.action.core.outputs
 import data.GhGraphClient
@@ -6,7 +7,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.uuid.nextUUID
 import model.Inputs
 import model.Inputs.Companion.resolveInputs
 import usecases.WorkflowRuns
@@ -15,6 +15,7 @@ import utils.actions.ActionEnvironment
 import utils.actions.ActionFailedException
 import utils.failOrError
 import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
 
 suspend fun main() {
   // By design, errors in processing the inputs always make the action failing!
@@ -97,7 +98,8 @@ suspend fun detectDefaultBranch(inputs: Inputs): String {
   }
 }
 
-private fun generateExternalRefId(): String = Random.Default.nextUUID().let {
+@OptIn(ExperimentalUuidApi::class)
+private fun generateExternalRefId(): String = Random.Default.nextUuid().let {
   "${ActionEnvironment.GITHUB_RUN_ID}-${ActionEnvironment.GITHUB_JOB}-$it"
 }
 
