@@ -37,6 +37,10 @@ kotlin {
       }
     }
 
+    tasks.clean.configure {
+      delete(outputDir)
+    }
+
     rootProject.plugins.withType<NodeJsRootPlugin> {
       rootProject.the<NodeJsRootExtension>().version = "20.9.0"
     }
@@ -48,7 +52,7 @@ kotlin {
         listOf("kotlin-js-action", "serialization").forEach {
           implementation(group = "com.github.rnett.ktjs-github-action", name = it, version = "1.6.0")
         }
-        implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.1.1")
+        implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.1.2")
         implementation(group = "io.ktor", name = "ktor-client-js", version = "2.3.12")
       }
     }
