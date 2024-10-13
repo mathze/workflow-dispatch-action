@@ -1,9 +1,10 @@
-package data
+package adapter.gh.net.impl
 
+import adapter.gh.net.GraphQlClient
+import adapter.gh.net.impl.GhRestClient.HttpHeaders
 import com.rnett.action.core.logger.debug
+import com.rnett.action.httpclient.HttpResponse
 import com.rnett.action.httpclient.MutableHeaders
-import io.ktor.http.HttpHeaders
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -15,17 +16,9 @@ import utils.actions.ActionEnvironment
  * @property[token] The PAT to use for authentication.
  * @constructor Create an instance.
  */
-class GhGraphClient(token: String) : WsClient(token) {
+class GhGraphClient(token: String) : WsClient(token), GraphQlClient {
 
-  /**
-   * Sends the given query to GitHub's GraphQL endpoint.
-   *
-   * @param[query] The query to send.
-   * @param[variables] Optional additional variables to use in the query.
-   *
-   * @return The received response as json.
-   */
-  suspend fun sendQuery(query: String, variables: JsonObject? = null): JsonElement {
+  override suspend fun sendQuery(query: String, variables: JsonObject?): HttpResponse {
     debug("Sending request >>$query<< to $graphApiUrl")
     val req = buildJsonObject {
       put("query", JsonPrimitive(query))
@@ -33,11 +26,10 @@ class GhGraphClient(token: String) : WsClient(token) {
         this.put("variables", variables)
       }
     }
+    debug("Final request: $req")
 
     val response = client.post(graphApiUrl, req.toString())
-    val result = response.toJson()
-    debug("Response $result")
-    return result
+    return response
   }
 
   /**
