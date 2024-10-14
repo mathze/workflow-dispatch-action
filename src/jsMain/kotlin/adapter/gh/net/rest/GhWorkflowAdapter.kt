@@ -13,12 +13,13 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import utils.retryOnce
 import kotlin.js.Date
 
 class GhWorkflowAdapter(private val client: RestClient) : WorkflowPort {
 
   override suspend fun retrieveWorkflowId(workflowName: String): Result<String> {
-    val response = client.sendGet("actions/workflows/$workflowName")
+    val response = retryOnce { client.sendGet("actions/workflows/$workflowName") }
 
     if (!response.isSuccess()) {
       logger.error("Receiving workflow id results in error! Details: ${response.toResponseJson(true)}")
@@ -51,7 +52,7 @@ class GhWorkflowAdapter(private val client: RestClient) : WorkflowPort {
 
     logger.info("Sending workflow dispatch event with body $body")
     val fallBackDate = Date() // keep this here, as this indicates the time when
-    val response = client.sendPost("actions/workflows/$workflowId/dispatches", body)
+    val response = retryOnce { client.sendPost("actions/workflows/$workflowId/dispatches", body) }
     if (HttpStatusCode.MultipleChoices.value <= response.statusCode) {
       logger.error("Response: ${response.readBody()}")
       return Result.error("Error starting workflow! For response details see log.")

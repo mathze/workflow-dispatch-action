@@ -3,6 +3,8 @@ package adapter.gh.net.rest
 import domain.model.Result
 import domain.model.WorkflowRun
 import domain.model.WorkflowRunList
+import kotlinx.js.set
+import node.process.process
 import withMockServer
 import kotlin.js.Date
 import kotlin.test.Test
@@ -155,5 +157,27 @@ class GhWorkflowRunAdapterIntegrationTest : WebIntegrationTestBase() {
     assertIs<NoSuchElementException>(ex)
     val message = assertNotNull(ex.message)
     assertContains(message, "id")
+  }
+
+  @Test
+  fun should_retry_on_network_issue() = withMockServer {
+    // given
+    process.env["GITHUB_API_URL"] = "http://localhost:9090"
+    val runList = WorkflowRunList(
+      workflowId = "64",
+      ref = "parsing issue no id",
+      dispatchTime = Date("2024-10-12 20:53:00Z")
+    )
+
+    // when
+    val result = sut.retrieveWorkflowRuns(runList)
+
+    // then
+    val value = assertIs<Result.Ok<WorkflowRunList>>(result).value
+    assertEquals("eTag 4 network issue", value.eTag)
+    val runs = value.runs
+    assertEquals(1, runs.size)
+    val run = runs.first()
+    assertEquals("99", run.id)
   }
 }

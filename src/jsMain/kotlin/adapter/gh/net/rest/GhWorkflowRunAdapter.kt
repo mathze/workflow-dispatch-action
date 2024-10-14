@@ -21,6 +21,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import utils.retryOnce
 import kotlin.js.Date
 
 class GhWorkflowRunAdapter(private val client: RestClient) : WorkflowRunsPort {
@@ -31,9 +32,11 @@ class GhWorkflowRunAdapter(private val client: RestClient) : WorkflowRunsPort {
     val queryArgs = mapOf(
       queryEvent(), queryCreatedAt(formerRunList.dispatchTime), queryRef(formerRunList.ref)
     )
-    val runsResponse = client.sendGet("actions/runs", queryArgs) {
-      formerRunList.eTag?.also {
-        this.add(HttpHeaders.IfNoneMatch, it)
+    val runsResponse = retryOnce {
+      client.sendGet("actions/runs", queryArgs) {
+        formerRunList.eTag?.also {
+          this.add(HttpHeaders.IfNoneMatch, it)
+        }
       }
     }
 

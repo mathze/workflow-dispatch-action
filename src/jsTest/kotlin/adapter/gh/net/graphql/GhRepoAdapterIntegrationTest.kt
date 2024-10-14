@@ -2,6 +2,8 @@ package adapter.gh.net.graphql
 
 import adapter.gh.net.rest.WebIntegrationTestBase
 import domain.model.Result
+import kotlinx.js.set
+import node.process.process
 import withMockServer
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -74,6 +76,20 @@ class GhRepoAdapterIntegrationTest : WebIntegrationTestBase() {
     // then
     val value = assertIs<Result.Error>(res).errorMessage
     assertContains(value, "Error while retrieving default branch name! See log for details")
+  }
+
+  @Test
+  fun should_retry_on_network_issues() = withMockServer {
+    // given
+    val url = "http://localhost:9090"
+    process.env["GITHUB_GRAPHQL_URL"] = "$url/gql"
+
+    // when
+    val res = sut.getDefaultBranch(owner, "network issue")
+
+    // then
+    val value = assertIs<Result.Ok<String>>(res).value
+    assertEquals("retry branch", value)
   }
 
 }

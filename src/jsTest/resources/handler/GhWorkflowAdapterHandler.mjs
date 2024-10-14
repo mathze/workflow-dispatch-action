@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 
 const urlBase = 'http://localhost:8080/repos/owner/repo/actions/workflows'
 export const handler = [
-  // GhWorkflowAdapterIntegrationTest#should_retrieve_id_from_workflow_name
+  // should_retrieve_id_from_workflow_name
   http.get(
     `${urlBase}/test.yml`,
     () => {
@@ -13,7 +13,7 @@ export const handler = [
       );
     }
   ),
-  // GhWorkflowAdapterIntegrationTest#retrieve_workflow_id_should_handle_error_gracefully
+  // retrieve_workflow_id_should_handle_error_gracefully
   http.get(
     `${urlBase}/asd`,
     () => {
@@ -26,20 +26,39 @@ export const handler = [
       );
     }
   ),
-
-  // GhWorkflowAdapterIntegrationTest#retrieve_workflow_id_should_fail_on_invalid_json
+  // retrieve_workflow_id_should_fail_on_invalid_json
   http.get(
     `${urlBase}/invalid.yml`,
     () => {
       return HttpResponse.json(
         {
           identifier: 123,
-          name: "Invalid",
         }
       );
     }
   ),
-  // GhWorkflowAdapterIntegrationTest#should_trigger_workflow_and_use_date_from_response
+  // retrieve_workflow_id_should_retry_on_network_issue
+  http.get(
+    `${urlBase}/network_error.yml`,
+    function* () {
+      let firstCall = true;
+
+      if (firstCall) {
+        firstCall = false;
+        console.info('Respond with error');
+        yield HttpResponse.error();
+      }
+
+      console.info('Respond with ok');
+      return HttpResponse.json(
+        {
+          id: 42,
+        }
+      );
+    }
+  ),
+
+  // should_trigger_workflow_and_use_date_from_response
   http.post(
     `${urlBase}/11/dispatches`,
     async ({request}) => {
@@ -68,7 +87,7 @@ export const handler = [
       }
     }
   ),
-  // GhWorkflowAdapterIntegrationTest#should_trigger_workflow_and_use_fallback_date
+  // should_trigger_workflow_and_use_fallback_date
   http.post(
     `${urlBase}/13/dispatches`,
     async ({request}) => {
@@ -92,7 +111,7 @@ export const handler = [
       }
     }
   ),
-  // GhWorkflowAdapterIntegrationTest#trigger_workflow_should_handle_error_gracefully
+  // trigger_workflow_should_handle_error_gracefully
   http.post(
     `${urlBase}/7/dispatches`,
     async () => {
@@ -101,6 +120,30 @@ export const handler = [
         {
           status: 500,
           statusText: 'Error!'
+        }
+      );
+    }
+  ),
+  // trigger_workflow_should_retry_on_network_issue
+  http.post(
+    `${urlBase}/23/dispatches`,
+    async function* () {
+      let firstCall = true;
+
+      if (firstCall) {
+        firstCall = false;
+        console.info('Respond with error');
+        yield HttpResponse.error();
+      }
+
+      console.info('Respond with ok');
+      return new HttpResponse(
+        null,
+        {
+          status: 200,
+          headers: {
+            date: '2023-10-05 19:47:42Z',
+          },
         }
       );
     }

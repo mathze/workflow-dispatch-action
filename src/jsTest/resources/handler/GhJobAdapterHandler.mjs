@@ -2,7 +2,7 @@ import { http, delay, HttpResponse } from 'msw'
 
 const urlBase = 'http://localhost:8080/repos/owner/repo/jobs'
 export const handler = [
-  // GhJobAdapterIntegrationTest#should_fetch_and_map_jobList
+  // should_fetch_and_map_jobList
   http.get(
     `${urlBase}/42`,
     () => {
@@ -24,7 +24,7 @@ export const handler = [
      );
     }
   ),
-  // GhJobAdapterIntegrationTest#should_handle_not_modified_and_return_initial_jobList
+  // should_handle_not_modified_and_return_initial_jobList
   http.get(
     `${urlBase}/13`,
     ({request}) => {
@@ -51,16 +51,28 @@ export const handler = [
       }
     }
   ),
-  // GhJobAdapterIntegrationTest#should_handle_errors
+  // should_retry_on_error
   http.get(
     `${urlBase}/error`,
-    () => {
-      return new HttpResponse(
-        null,
-        {
-          status: 401,
-          statusText: 'Error'
-        }
+    function* () {
+      let firstRun = true;
+      if (firstRun) {
+        firstRun = false;
+        console.info('Respond with error');
+        yield HttpResponse.error();
+      }
+
+      console.info('Respond with ok');
+      return HttpResponse.json(
+         {
+           jobs: [
+             {
+               steps: [
+                 { name: 'after network error' },
+               ],
+             },
+           ],
+         }
       );
     }
   ),

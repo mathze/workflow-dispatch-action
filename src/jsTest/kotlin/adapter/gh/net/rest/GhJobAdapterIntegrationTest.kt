@@ -1,10 +1,18 @@
 package adapter.gh.net.rest
 
+import com.rnett.action.currentProcess
+import com.rnett.action.writable
 import domain.model.JobList
 import domain.model.Result
+import node.WritableStream
+import node.events.Event
+import node.fs.createWriteStream
+import node.process.WriteStream
+import node.process.process
+import node.stream.Readable
+import node.stream.Writable
 import withMockServer
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertSame
@@ -42,7 +50,7 @@ class GhJobAdapterIntegrationTest : WebIntegrationTestBase() {
   }
 
   @Test
-  fun should_handle_errors() = withMockServer {
+  fun should_retry_on_error() = withMockServer {
     // given
     val url = "jobs/error"
 
@@ -50,7 +58,11 @@ class GhJobAdapterIntegrationTest : WebIntegrationTestBase() {
     val res = sut.fetchJobs(JobList(url))
 
     // then
-    val value = assertIs<Result.Error>(res).errorMessage
-    assertContains(value, "Cannot retrieve jobs from $url! Details:")
+    val value = assertIs<Result.Ok<JobList>>(res).value
+    assertEquals(1, value.jobs.size, "Only one job")
+    val job = value.jobs.first()
+    assertEquals(1, job.steps.size, "Only one step")
+    val step = job.steps.first()
+    assertEquals("after network error", step.name, "Step Name")
   }
 }

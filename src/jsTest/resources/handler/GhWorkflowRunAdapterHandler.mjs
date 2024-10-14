@@ -11,6 +11,36 @@ export const handler = [
       return mockResponses.get(ref);
     }
   ),
+  // should_retry_on_network_issue
+  http.get(
+    'http://localhost:9090/repos/owner/repo/actions/runs',
+    function* () {
+      let firstCall = true;
+      if (firstCall) {
+        firstCall = false;
+        console.info('Respond with error');
+        yield HttpResponse.error();
+      }
+
+      console.info('Respond with ok');
+      return HttpResponse.json(
+        {
+          total_count: 1,
+          workflow_runs: [
+            {
+              id: 99,
+              workflow_id: 64,
+            },
+          ],
+        },
+        {
+          headers: {
+            etag: "eTag 4 network issue"
+          }
+        }
+      );
+    }
+  ),
 ];
 
 const mockResponses = new Map([

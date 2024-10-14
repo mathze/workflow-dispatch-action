@@ -48,6 +48,16 @@ class GhWorkflowAdapterIntegrationTest : WebIntegrationTestBase() {
   }
 
   @Test
+  fun retrieve_workflow_id_should_retry_on_network_issue() = withMockServer {
+    // given // when
+    val result = sut.retrieveWorkflowId("network_error.yml")
+
+    // then
+    val id = assertIs<Result.Ok<String>>(result).value
+    assertEquals("42", id)
+  }
+
+  @Test
   fun should_trigger_workflow_and_use_date_from_response() = withMockServer {
     // when
     val result = sut.triggerWorkflow(
@@ -97,5 +107,18 @@ class GhWorkflowAdapterIntegrationTest : WebIntegrationTestBase() {
     // then
     val value = assertIs<Result.Error>(result).errorMessage
     assertEquals("Error starting workflow! For response details see log.", value)
+  }
+
+  @Test
+  fun trigger_workflow_should_retry_on_network_issue() = withMockServer {
+    // when
+    val result = sut.triggerWorkflow(
+      "23",
+      "networkissue"
+    )
+
+    // then
+    val value = assertIs<Result.Ok<Date>>(result).value
+    assertEquals(Date("2023-10-05 19:47:42Z").getMilliseconds(), value.getMilliseconds())
   }
 }

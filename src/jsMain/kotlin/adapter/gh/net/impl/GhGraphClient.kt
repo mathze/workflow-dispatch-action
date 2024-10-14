@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import utils.actions.ActionEnvironment
+import utils.retryOnce
 
 /**
  * Convenient class to handle requests to GitHub's GraphQL endpoint.
@@ -28,7 +29,7 @@ class GhGraphClient(token: String) : WsClient(token), GraphQlClient {
     }
     debug("Final request: $req")
 
-    val response = client.post(graphApiUrl, req.toString())
+    val response = retryOnce { client.post(graphApiUrl, req.toString()) }
     return response
   }
 
