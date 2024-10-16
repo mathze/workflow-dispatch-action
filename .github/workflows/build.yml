@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  pull_request:
+    branches-ignore:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test results
+          path: build/test-results/TEST-*.xml
+          reporter: java-junit
