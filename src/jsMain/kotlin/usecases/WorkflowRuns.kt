@@ -345,6 +345,7 @@ class WorkflowRuns(
     fun queryCreatedAt(at: String): Pair<String, String> {
       // Subtract tolerance to account for server clock skew
       val adjustedTime = subtractSecondsFromIsoTimestamp(at, CLOCK_SKEW_TOLERANCE_SECONDS)
+      logger.info("createdAt $adjustedTime (adjusted for clock skew tolerance)")
       return QUERY_CREATED_AT to ">=$adjustedTime"
     }
     fun queryRef(of: String) = QUERY_REF to of
