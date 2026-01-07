@@ -21,6 +21,7 @@ import model.RunStatus
 import model.WorkflowRun
 import utils.actions.ActionFailedException
 import utils.delay
+import kotlin.js.Date
 import kotlin.math.abs
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -332,10 +333,35 @@ class WorkflowRuns(
     private const val QUERY_CREATED_AT = "created"
     private const val QUERY_REF = "branch"
 
+    /**
+     * Tolerance in seconds to account for server clock skew.
+     * This prevents missing workflows that are created slightly before the dispatch time
+     * due to clock synchronization differences between servers.
+     */
+    private const val CLOCK_SKEW_TOLERANCE_SECONDS = 2
+
     //<editor-fold desc="Header stuff">
     fun queryEvent(type: String = EVENT_DISPATCH) = QUERY_EVENT to type
-    fun queryCreatedAt(at: String) = QUERY_CREATED_AT to ">=$at"
+    fun queryCreatedAt(at: String): Pair<String, String> {
+      // Subtract tolerance to account for server clock skew
+      val adjustedTime = subtractSecondsFromIsoTimestamp(at, CLOCK_SKEW_TOLERANCE_SECONDS)
+      return QUERY_CREATED_AT to ">=$adjustedTime"
+    }
     fun queryRef(of: String) = QUERY_REF to of
+
+    /**
+     * Subtracts a number of seconds from an ISO-8601 timestamp.
+     *
+     * @param isoTimestamp The ISO-8601 formatted timestamp string
+     * @param seconds The number of seconds to subtract
+     * @return A new ISO-8601 formatted timestamp string with the seconds subtracted
+     */
+    private fun subtractSecondsFromIsoTimestamp(isoTimestamp: String, seconds: Int): String {
+      val date = Date(isoTimestamp)
+      val timeMillis = date.getTime()
+      val adjustedTimeMillis = timeMillis - (seconds * 1000)
+      return Date(adjustedTimeMillis).toISOString()
+    }
     //</editor-fold>
 
     //<editor-fold desc="Json stuff">
