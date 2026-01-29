@@ -6,7 +6,8 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
-  kotlin("multiplatform")
+  kotlin("multiplatform") version "2.2.0"
+  kotlin("plugin.serialization") version "2.2.0"
   id("com.github.rnett.ktjs-github-action") version "1.6.0"
 }
 
@@ -36,13 +37,12 @@ kotlin {
         }
       }
     }
+    nodejs {
+      version = "20.9.0"
+    }
 
     tasks.clean.configure {
       delete(outputDir)
-    }
-
-    rootProject.plugins.withType<NodeJsRootPlugin> {
-      rootProject.the<NodeJsRootExtension>().version = "20.9.0"
     }
   }
 
@@ -50,10 +50,10 @@ kotlin {
     val jsMain by getting {
       dependencies {
         listOf("kotlin-js-action", "serialization").forEach {
-          implementation(group = "com.github.rnett.ktjs-github-action", name = it, version = "1.6.0")
+          implementation("com.github.rnett.ktjs-github-action:$it:1.6.0")
         }
-        implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.1.2")
-        implementation(group = "io.ktor", name = "ktor-client-js", version = "2.3.12")
+        implementation("app.softwork:kotlinx-uuid-core-js:0.1.2")
+        implementation("io.ktor:ktor-client-js:2.3.12")
       }
     }
   }
