@@ -53,7 +53,7 @@ kotlin {
           implementation("com.github.rnett.ktjs-github-action:$it:1.6.0")
         }
         implementation("app.softwork:kotlinx-uuid-core-js:0.1.2")
-        implementation("io.ktor:ktor-client-js:2.3.12")
+        implementation("io.ktor:ktor-client-js:2.3.13")
       }
     }
   }
