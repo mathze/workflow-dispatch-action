@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 plugins {
   kotlin("multiplatform")
   id("com.github.rnett.ktjs-github-action") version "1.6.0"
+  id("dev.mokkery") version "2.3.0"
 }
 
 repositories {
@@ -16,6 +17,8 @@ repositories {
 
 kotlin {
   js(IR) {
+    useEsModules() // requires to utilize mockServer (msw:2.4.9) from js
+
     val outputDir = layout.projectDirectory.dir("dist")
     val outFileName = "index.js"
     val webpackTask = addWebpackGenTask()
@@ -35,26 +38,41 @@ kotlin {
           dependsOn(webpackTask)
         }
       }
+      testTask {
+        useMocha()
+      }
+    }
+
+    rootProject.plugins.withType<NodeJsRootPlugin> {
+      rootProject.the<NodeJsRootExtension>().version = "20.14.0"
+    }
+
+    tasks.assemble.configure {
+      dependsOn(webpackTask)
     }
 
     tasks.clean.configure {
       delete(outputDir)
     }
-
-    rootProject.plugins.withType<NodeJsRootPlugin> {
-      rootProject.the<NodeJsRootExtension>().version = "20.9.0"
-    }
   }
 
   sourceSets {
-    val jsMain by getting {
+    jsMain {
       dependencies {
         listOf("kotlin-js-action", "serialization").forEach {
           implementation(group = "com.github.rnett.ktjs-github-action", name = it, version = "1.6.0")
         }
         implementation(group = "app.softwork", name = "kotlinx-uuid-core-js", version = "0.1.2")
-        implementation(group = "io.ktor", name = "ktor-client-js", version = "2.3.12")
+        implementation(group = "io.ktor", name = "ktor-client-core-js", version = "3.0.0")
       }
+    }
+    jsTest {
+      dependencies {
+        implementation(kotlin("test"))
+        implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version = "1.9.0-RC.2")
+        implementation(npm("msw", "2.4.9"))
+      }
+
     }
   }
 }

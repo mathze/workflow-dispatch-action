@@ -1,8 +1,10 @@
-package data
+package adapter.gh.net.impl
 
+import adapter.gh.net.RestClient
+import adapter.gh.net.queryParams
+import com.rnett.action.core.logger
 import com.rnett.action.httpclient.HttpResponse
 import com.rnett.action.httpclient.MutableHeaders
-import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.takeFrom
 import utils.actions.ActionEnvironment
@@ -18,39 +20,23 @@ import utils.actions.ActionEnvironment
  * @param[owner] Used to build the main part of GitHub resource paths.
  * @param[repo] Used to build the main part of GitHub resource paths.
  */
-class GhRestClient(token: String, private val owner: String, private val repo: String) : WsClient(token) {
+class GhRestClient(
+  token: String,
+  private val owner: String,
+  private val repo: String) : WsClient(token), RestClient {
 
-  /**
-   * Send a POST request to GitHub's rest-api.
-   *
-   * @param[pathOrUrl] The path ('actions/workflows') to the resource or a full qualified url.
-   *  Attention: If using a URL this should point to a GitHub-resource,
-   *  otherwise you may have to override some default headers set by [WsClient].
-   * @param[body] The request body to send.
-   *
-   * @return The response object of the request.
-   */
-  suspend fun sendPost(pathOrUrl: String, body: String): HttpResponse {
+  override suspend fun sendPost(pathOrUrl: String, body: String): HttpResponse {
     return client.post(createUrl(pathOrUrl), body)
   }
 
-  /**
-   * Sends a GET request to GitHub's rest-api.
-   *
-   * @param[pathOrUrl] The path to the resource or a full qualified url.
-   *  Attention: If using a URL this should point to a GitHub-resource,
-   *  otherwise you may have to override some default headers set by [WsClient].
-   * @param[query] Query parameters to add to the path. Defaults to empty map.
-   * @param[headerProvider] Function to manipulate the headers of the request.
-   *
-   * @return The response object of the request.
-   */
-  suspend fun sendGet(
+  override suspend fun sendGet(
     pathOrUrl: String,
-    query: Map<String, String> = mapOf(),
-    headerProvider: (MutableHeaders.() -> Unit)? = null
+    query: Map<String, String>,
+    headerProvider: (MutableHeaders.() -> Unit)?
   ): HttpResponse {
-    return client.get(createUrl(pathOrUrl, query)) {
+    val url = createUrl(pathOrUrl, query)
+    logger.debug("sending GET request to $url")
+    return client.get(url) {
       if (null != headerProvider) {
         headerProvider()
       }
@@ -88,20 +74,14 @@ class GhRestClient(token: String, private val owner: String, private val repo: S
    */
   override fun applyHeaders(headers: MutableHeaders) {
     super.applyHeaders(headers)
-    headers.add(HttpHeaders.Accept, "application/vnd.github.v3+json")
+    headers.add(Accept, "application/vnd.github.v3+json")
+  }
+
+  @Suppress("ConstPropertyName")
+  companion object HttpHeaders {
+    const val Accept = "Accept"
+    const val CacheControl = "Cache-Control"
+    const val UserAgent = "User-Agent"
+    const val IfNoneMatch = "If-None-Match"
   }
 }
-
-/**
- * Extension function to add query parameters to this URLBuilder.
- */
-fun URLBuilder.queryParams(params: Map<String, String>): URLBuilder = this.also {
-  params.forEach { (k, v) ->
-    parameters[k] = v
-  }
-}
-
-/**
- * Extension function to retrieve the `etag` header value.
- */
-fun HttpResponse.etag() = headers["etag"]
