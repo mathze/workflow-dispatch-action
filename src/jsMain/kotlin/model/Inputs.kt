@@ -24,7 +24,8 @@ data class Inputs(
   val triggerTimeout: Duration,
   val triggerInterval: Duration,
   val waitTimeout: Duration,
-  val waitInterval: Duration
+  val waitInterval: Duration,
+  val lookupTolerance: Duration,
 ) {
   companion object {
     fun resolveInputs() = logger.withGroup("Reading inputs") {
@@ -45,7 +46,8 @@ data class Inputs(
         getDuration("trigger-timeout", 1.minutes),
         getDuration("trigger-interval", 1.seconds),
         getDuration("wait-timeout", 10.minutes),
-        getDuration("wait-interval", 1.seconds)
+        getDuration("wait-interval", 1.seconds),
+        getDuration("lookup-tolerance", 0.seconds)
       ).also {
         logger.info("Got inputs: $it")
       }

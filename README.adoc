@@ -308,6 +308,15 @@ and the workflow fail.
 |*O*
 |`false`
 
+|`lookup-tolerance`
+|Tolerance to account for server clock skew between the dispatch response time and the workflow run's created_at timestamp.
+[NOTE]
+The server executing this action may -- and most properly will -- be different from the one that executes the triggered workflow.
+[WARNING]
+Use with caution as it may result in false positives and may increase requests sent to the api, which in turn could affect your quotas.
+|*O*
+|0 seconds
+
 |===
 [#duration]
 (D): Duration can be specified in either ISO-8601 Duration format or in specific format e.g. `1m 10s` (details see https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.time/-duration/parse.html)
