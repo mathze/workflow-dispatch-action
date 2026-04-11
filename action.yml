@@ -87,6 +87,12 @@ inputs:
     required: false
     description: Time to wait between consecutive queries on the workflow run status. Defaults to 1 second.
 
+  lookup-tolerance:
+    required: false
+    description: >
+      Tolerance in seconds to account for server clock skew between the dispatch response time and
+      the workflow run's created_at timestamp.
+
 outputs:
   failed:
     description: >
