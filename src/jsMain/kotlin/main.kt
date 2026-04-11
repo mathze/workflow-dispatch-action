@@ -15,12 +15,19 @@ import utils.actions.ActionEnvironment
 import utils.actions.ActionFailedException
 import utils.failOrError
 import kotlin.random.Random
+import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
+import com.rnett.action.core.fail
 
 suspend fun main() {
   // By design, errors in processing the inputs always make the action failing!
   val inputs: Inputs = resolveInputs()
-  processAndValidateInputs(inputs)
+  try {
+    processAndValidateInputs(inputs)
+  } catch (ex: Throwable) {
+    outputs["failed"] = "true"
+    fail(ex.message ?: "Unknown error during input validation!")
+  }
 
   // Main action lifecycle
   try {
@@ -120,9 +127,16 @@ private suspend fun processTriggerMode(client: GhRestClient, inputs: Inputs, ext
   logger.info("Got workflow-id $wfId for workflow ${inputs.workflowName}")
   val dispatchTime = workflows.triggerWorkflow(wfId, inputs.ref!!, inputs.payload)
 
+  // FIXME: Improve error handling
+  // due to small differences between servers we adjust the dispatch time
+  val adjustedDispatchTime = Instant.parseOrNull(dispatchTime)
+    ?.minus(inputs.lookupTolerance)
+    ?.toString() ?: dispatchTime
+  logger.debug("Got dispatch time ${dispatchTime} and adjusted to ${adjustedDispatchTime}")
+
   val wfRuns = WorkflowRuns(client)
   val workflowRun = wfRuns.waitForWorkflowRunCreated(
-    wfId, dispatchTime, inputs.ref!!,
+    wfId, adjustedDispatchTime, inputs.ref!!,
     inputs.triggerTimeout, inputs.triggerInterval,
     externalReferenceId
   )

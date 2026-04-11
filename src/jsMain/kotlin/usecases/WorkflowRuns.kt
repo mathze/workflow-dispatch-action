@@ -80,6 +80,7 @@ class WorkflowRuns(
    * Finds a workflow run matching the given criteria.
    *
    * @param[workflowId] The id of the workflow the run have to belong to
+   * @param [ref] branch to which the run applies.
    * @param[dispatchTime] The time when the workflow dispatch event was triggered.
    *    We only consider runs after this time.
    * @param[externalRefId] Optional, if present we only consider the workflow that
@@ -135,7 +136,8 @@ class WorkflowRuns(
    *
    * @param workflowId Used to filter the resulting runs.
    * @param ref branch to which the run applies.
-   * @param dispatchTime Gotten from [Workflows.triggerWorkflow], used as query parameter with '>=' operator.
+   * @param dispatchTime Gotten from [Workflows.triggerWorkflow] (might have been adjusted see `lookup-tolerance`
+   * input), used as query parameter with '>=' operator.
    * @throws ActionFailedException In case receiving run details fails.
    */
   private suspend fun updateRunList(workflowId: String, ref: String, dispatchTime: String) {
