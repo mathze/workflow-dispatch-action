@@ -113,7 +113,7 @@ jobs:
       - runJob1
     steps:
       - name: "J1_A1: get jobs"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
@@ -127,7 +127,7 @@ jobs:
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
 
       - name: "J1_A1: get checkrun"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
@@ -158,7 +158,7 @@ jobs:
       - runJob1
     steps:
       - name: "J1_A2: get jobs"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
@@ -172,7 +172,7 @@ jobs:
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
 
       - name: "J1_A2: get checkruns"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
@@ -203,7 +203,7 @@ jobs:
       - runJob2
     steps:
       - name: "J2: get jobs"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
@@ -217,7 +217,7 @@ jobs:
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
 
       - name: "J2: get checkruns"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
@@ -248,7 +248,7 @@ jobs:
       - runJob3
     steps:
       - name: "J3: get jobs"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
@@ -262,7 +262,7 @@ jobs:
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
 
       - name: "J3: get checkrun"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations

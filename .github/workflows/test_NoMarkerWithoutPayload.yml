@@ -28,7 +28,7 @@ jobs:
 
       ## receiving and checking the annotation for noPayload test
       - name: "get jobs"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_jobs
         with:
           route: GET /repos/{repo}/actions/runs/{run_id}/jobs
@@ -42,7 +42,7 @@ jobs:
           echo "job_id=$job_id" >> "$GITHUB_OUTPUT"
 
       - name: "get checkrun"
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@v3.0.0
         id: get_checkrun
         with:
           route: GET /repos/{repo}/check-runs/{check_id}/annotations
