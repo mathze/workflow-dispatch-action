@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
-  kotlin("multiplatform") version "2.3.10"
+  kotlin("multiplatform") version "2.3.21"
   kotlin("plugin.serialization") version "2.3.10"
   id("com.github.rnett.ktjs-github-action") version "1.6.0"
 }
